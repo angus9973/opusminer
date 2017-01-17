@@ -5,17 +5,19 @@
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **
 ** Please report any bugs to Geoff Webb <geoff.webb@monash.edu>
 */
+
+#include <Rcpp.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -43,29 +45,6 @@
 #include "fisher.h"
 
 std::priority_queue<itemsetRec> itemsets;
-
-void print_header(FILE *f, int argc, const char **argv) {
-  fprintf(f,
-    "OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets\n"
-    "Version 1.2\n"
-    "Copyright (C) 2012-2016 Geoffrey I Webb\n"
-    "This program comes with ABSOLUTELY NO WARRANTY. This is free software, \n"
-    "and you are welcome to redistribute it under certain conditions.\n"
-    "See the GNU General Public Licence <http://www.gnu.org/licenses/> for details.\n"
-    "\n"
-    "If you publish results obtained by using this software please cite\n"
-    "  Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting Associations.\n"
-    "  ACM Transactions on Knowledge Discovery from Data. 8(3), Art. no. 15.\n"
-    "\n"
-    );
-  for (int i = 1; i < argc; i++) {
-    if (argv[i][0] == '-' && argv[i][1] == 'k' && i < argc - 1) {
-      fprintf(f, "  %s %s\n", argv[i], argv[i+1]);
-      ++i;
-    }
-    else fprintf(f, "  %s\n", argv[i]);
-  }
-}
 
 int
 #ifdef _WIN32
@@ -116,7 +95,7 @@ cdecl
       case 'r':
         redundancyTests = false;
 	      break;
-      default: 
+      default:
         fprintf(stderr, usageStr, argv[0]);
         exit(1);
       }
