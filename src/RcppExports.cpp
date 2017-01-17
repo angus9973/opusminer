@@ -5,13 +5,16 @@
 
 using namespace Rcpp;
 
-// rcpp_hello
-List rcpp_hello();
-RcppExport SEXP opusminer_rcpp_hello() {
+// opusHelper
+Rcpp::GenericVector opusHelper(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector args);
+RcppExport SEXP opusminer_opusHelper(SEXP inputSEXP, SEXP k_SEXP, SEXP argsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello());
+    Rcpp::traits::input_parameter< Rcpp::GenericVector >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type k_(k_SEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type args(argsSEXP);
+    rcpp_result_gen = Rcpp::wrap(opusHelper(input, k_, args));
     return rcpp_result_gen;
 END_RCPP
 }
