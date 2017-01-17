@@ -5,16 +5,17 @@
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <Rcpp.h>
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -135,7 +136,7 @@ void checkImmediateSubsets(itemset &is, const int isCnt, bool &redundant, bool &
       apriori = true;
       return;
     }
-    
+
     if (redundancyTests && subsetCnt == isCnt) {
       redundant = true;
     }
@@ -206,7 +207,7 @@ bool checkSubsets(itemID item, itemset &is, const int cnt, const double new_sup,
 
   val = searchByLift ? new_sup / (parentSup * itemSup(item))
                      : new_sup - parentSup * itemSup(item);
-  
+
   if (val <= minValue) return false;
 
   p = fisher(cnt, itemCnt, parentCnt);
@@ -320,7 +321,7 @@ void opus(itemsetRec &is, tidset &cover, itemQClass &q, const int maxItemCount) 
           newQ.insert(ubval, item);
         }
       }
-        
+
       is.erase(item);
     }
   }
@@ -337,7 +338,7 @@ void find_itemsets() {
     const float sup = countToSup(c);
     const float ubVal = searchByLift ? 1.0 / sup
                                      : sup - sup * sup;
-      
+
     // make sure that the support is high enough for it to be possible to create a significant itemset
     if (fisher(c, c, c) <= getAlpha(2)) {
       q.append(ubVal, i); // it is faster to sort the q once it is full rather than doing an insertion sort
@@ -366,10 +367,12 @@ void find_itemsets() {
     newq.append(q[i].ubVal, item);
 
     if (prevMinVal < minValue) {
-      printf("<%f>",minValue);
+      // printf("<%f>",minValue);
+      Rcpp::Rcout << "<%f>" << minValue;
       prevMinVal = minValue;
     }
-    else putchar('.');
+    // else putchar('.');
+    else Rcpp::Rcout << ".";
     fflush(stdout);
   }
 
