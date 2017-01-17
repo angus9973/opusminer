@@ -16,4 +16,4 @@
 */
 
 void find_itemsets();
-float minValue;
+extern float minValue;
