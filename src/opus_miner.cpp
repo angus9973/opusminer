@@ -139,7 +139,7 @@ opusCPP(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector a
     // fprintf(outf, "Found %ld non-redundant productive itemsets in %ld seconds\n", static_cast<long>(is.size()), tm);
     Rcpp::Rcout << "Found " << static_cast<long>(is.size()) << " non-redundant productive itemsets in " << tm << " seconds\n";
 
-    output.push_back(get_itemsets(is));
+    output= get_itemsets(is);
 
     #ifdef _WIN32
       time_t end_t = time(NULL);
