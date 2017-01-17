@@ -373,7 +373,7 @@ void find_itemsets() {
     }
     // else putchar('.');
     else Rcpp::Rcout << ".";
-    fflush(stdout);
+    // fflush(stdout);
   }
 
   // putchar('\n');
