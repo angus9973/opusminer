@@ -1,14 +1,14 @@
 # Header (from original opus_miner.cpp)
-opusHeader <- paste("OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets",
-                    "Version 1.2",
-                    "Copyright (C) 2012-2016 Geoffrey I Webb",
-                    "This program comes with ABSOLUTELY NO WARRANTY. This is free software,",
-                    "and you are welcome to redistribute it under certain conditions.",
-                    "See the GNU General Public Licence <http://www.gnu.org/licenses/> for details.",
-                    "",
-                    "If you publish results obtained by using this software please cite:",
-                    "  Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting Associations.",
-                    "  ACM Transactions on Knowledge Discovery from Data. 8(3), Art. no. 15.")
+opusHeader <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets",
+                "Version 1.2",
+                "Copyright (C) 2012-2016 Geoffrey I Webb",
+                "This program comes with ABSOLUTELY NO WARRANTY. This is free software,",
+                "and you are welcome to redistribute it under certain conditions.",
+                "See the GNU General Public Licence <http://www.gnu.org/licenses/> for details.",
+                "",
+                "If you publish results obtained by using this software please cite:",
+                "  Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting Associations.",
+                "  ACM Transactions on Knowledge Discovery from Data. 8(3), Art. no. 15.")
 
 # Read itemlist-format files
 readItemList <- function(fileName) {
@@ -56,11 +56,11 @@ opusR <- function(fileName,
               correctForMultCompare,
               redundancyTests)
 
-    output <- .opusHelper(input,
-                             k,
-                             args)
+    cat(opusHeader, sep = "\n")
 
-    cat(header, sep = "\n")
+    output <- .opusHelper(input,
+                          k,
+                          args)
 
     return(output)
 
