@@ -368,7 +368,7 @@ void find_itemsets() {
 
     if (prevMinVal < minValue) {
       // printf("<%f>",minValue);
-      Rcpp::Rcout << "<%f>" << minValue;
+      Rcpp::Rcout << "<" << minValue << ">";
       prevMinVal = minValue;
     }
     // else putchar('.');
