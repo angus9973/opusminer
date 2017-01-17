@@ -46,6 +46,14 @@
 
 std::priority_queue<itemsetRec> itemsets;
 
+void init() {
+  alpha = std::vector<double>();                 // globals.cpp
+  tids = std::vector<tidset>();                  // globals.cpp
+  itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
+  itemNames = std::vector<std::string>();        // globals.cpp
+  minValue = -std::numeric_limits<float>::max(); // load_data.cpp
+}
+
 int
 #ifdef _WIN32
 cdecl
