@@ -34,3 +34,37 @@ readItemList <- function(fileName) {
   return(l)
 
 }
+
+# Wrap opusCPP() (via opusHelper())
+opusR <- function(fileName,
+                  printClosures = FALSE,
+                  filterItemsets = TRUE,
+                  k = 100,
+                  searchByLift = FALSE,
+                  correctForMultCompare = TRUE,
+                  redundancyTests = TRUE) {
+
+  if (is.character(fileName) && file.exists(fileName)) {
+
+    input <- readItemList(fileName)
+
+    k <- ifelse(k < 1, 1, k)
+
+    args <- c(printClosures,
+              filterItemsets,
+              searchByLift,
+              correctForMultCompare,
+              redundancyTests)
+
+    output <- .opusHelper(input,
+                             k,
+                             args)
+
+    cat(header, sep = "\n")
+
+    return(output)
+
+  } else {
+    cat("ERROR")
+  }
+}
