@@ -68,3 +68,40 @@ opusR <- function(fileName,
     cat("ERROR")
   }
 }
+
+# Read itemlist-format files, index unique items, create tidlist
+readItemList2 <- function(fileName) {
+
+  d <- NULL
+
+  if (is.character(fileName) && file.exists(fileName)) {
+    try({
+      f <- file(fileName, open = "r")
+      l <- ""
+      while (length(l) != 0) {
+        l <- readLines(f, n = 1)
+        v <- strsplit(l, "\\s+")
+        # check if v[i] is in index
+        # if not, add to index, add to tidlist (that is, add the index no as an integer)
+        # then return completed tidlist (preserve index to decode tidlist into original input)
+      }
+      close(f)
+    })
+  } else {
+    print("ERROR")
+  }
+
+  l <- NULL
+
+  if (!is.null(d)) {
+    l <- strsplit(d, "\\s+")
+  }
+
+  return(l)
+
+}
+
+# Make index
+makeIndex_itemList <- function(itemList) {
+  return(matrix(unique(unlist(itemList)), ncol = 1, dimnames = list(NULL, "items")))
+}
