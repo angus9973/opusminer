@@ -1,3 +1,4 @@
+# Read itemlist-format files
 readItemList <- function(fileName) {
 
   d <- NULL
