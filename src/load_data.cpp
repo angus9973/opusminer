@@ -31,7 +31,7 @@
 #include "load_data.h"
 
 
-void load_data(Rcpp::GenericVector rInput) {
+void load_data(Rcpp::GenericVector input) {
 
   std::map<std::string, itemID> itemstrs;
   std::string s;
@@ -39,9 +39,9 @@ void load_data(Rcpp::GenericVector rInput) {
   noOfTransactions = 0;
   noOfItems = 0;
 
-  for (int i = 0; i < rInput.size(); i++) {
+  for (int i = 0; i < input.size(); i++) {
 
-    Rcpp::CharacterVector transaction = rInput[i];
+    Rcpp::CharacterVector transaction = input[i];
 
     for (int j = 0; j < transaction.size(); j++) {
 

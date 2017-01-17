@@ -15,4 +15,4 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-extern void load_data(Rcpp::GenericVector rData);
+extern void load_data(Rcpp::GenericVector input);
