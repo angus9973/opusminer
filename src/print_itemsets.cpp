@@ -53,7 +53,7 @@ Rcpp::GenericVector get_itemsetRec(const itemsetRec &is) {
                                 Rcpp::Named("Value") = is.value,
                                 Rcpp::Named("P") = is.p,
                                 Rcpp::Named("Closures") = "***",
-                                Rcpp::Named("Self-Sufficient") = "");
+                                Rcpp::Named("Self_Sufficient") = "");
 
   // if (printClosures) {
   //   itemset closure;
@@ -71,7 +71,7 @@ Rcpp::GenericVector get_itemsetRec(const itemsetRec &is) {
 }
 
 Rcpp::GenericVector get_itemsets(std::vector<itemsetRec> &is) {
-  Rcpp::GenericVector output;
+  Rcpp::GenericVector output(k);
   int index = 0;
 
   std::sort(is.begin(), is.end(), valgt);
@@ -99,7 +99,7 @@ Rcpp::GenericVector get_itemsets(std::vector<itemsetRec> &is) {
       if (!it->self_sufficient) {
         // print_itemsetRec(f, *it);
         Rcpp::GenericVector record = get_itemsetRec(*it);
-        record("Self-Sufficient") = "NO";
+        record("Self_Sufficient") = "NO";
         output[index] = record;
         index++;
       }
