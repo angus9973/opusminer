@@ -376,5 +376,5 @@ void find_itemsets() {
     fflush(stdout);
   }
 
-  putchar('\n');
+  // putchar('\n');
 }
