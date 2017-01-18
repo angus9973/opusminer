@@ -5,15 +5,17 @@
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include <Rcpp.h>
 
 #include <math.h>
 #include "globals.h"
@@ -38,7 +40,7 @@ void expandAlpha(const unsigned int depth) {
     alpha.push_back(1.0);
     if (depth <= 1) return;
   }
-  
+
   if (depth > noOfItems) alpha.push_back(0.0);
   else if (depth == noOfItems) alpha.push_back(alpha[depth-1]); // at deepest level so might as well use as much of the rest of the probability mass as possible
   else {
@@ -47,4 +49,11 @@ void expandAlpha(const unsigned int depth) {
       alpha.push_back(std::min((pow(0.5, static_cast<int>(depth-1)) / exp(log_combin(noOfItems, depth))) * 0.05, alpha[depth-1]));
     }
   }
+}
+
+// [[Rcpp::export]]
+Rcpp::XPtr< std::vector<tidset> > get_tids() {
+  // std::vector<int> xxx = new std::vector<int>;
+  Rcpp::XPtr< std::vector<tidset> > pointer(&tids) ;
+  return (pointer);
 }
