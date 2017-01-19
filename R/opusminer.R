@@ -69,6 +69,39 @@ opusR <- function(fileName,
   }
 }
 
+
+opusR_2 <- function(printClosures = FALSE,
+                    filterItemsets = TRUE,
+                    k = 100,
+                    searchByLift = FALSE,
+                    correctForMultCompare = TRUE,
+                    redundancyTests = TRUE) {
+
+  # if (is.character(fileName) && file.exists(fileName)) {
+  #
+  #   input <- readItemList(fileName)
+
+    k <- ifelse(k < 1, 1, k)
+
+    args <- c(printClosures,
+              filterItemsets,
+              searchByLift,
+              correctForMultCompare,
+              redundancyTests)
+
+    # cat(opusHeader, sep = "\n")
+
+    output <- .opusHelper(#input,
+                          k,
+                          args)
+
+    return(output)
+
+  # } else {
+  #   cat("ERROR")
+  # }
+}
+
 # Read itemlist-format files, index unique items, create tidlist
 readItemList2 <- function(fileName) {
 
@@ -306,12 +339,12 @@ opusR_file_whole_FAST <- function(fileName) {
     try({
 
       # type = character
-      txt <- readChar(fileName,
+      raw <- readChar(fileName,
                       nchars = file.info(fileName)$size,
                       useBytes = TRUE)
 
       # type = vector of character
-      raw <- strsplit(raw, split = "\n", fixed = TRUE)
+      raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
 
       # type = list of vector of character
       items <- strsplit(raw, " ", fixed = TRUE) # fixed vector of split = ...
@@ -354,20 +387,11 @@ opusR_file_whole_FAST <- function(fileName) {
   }
   load_data_whole(tidList)
 
+  return(opusR_2())
   # toDO:
-  # - call CPP
+  # - convert r object on cpp side properly
+  # - call CPP main function
   # - reverse CPP value via index
-}
-
-# getListIndex <- function(L) {
-#   index <- rep(seq_along(L), lengths(L))
-#   return(index)
-# }
-
-# Make index
-makeIndex_itemList <- function(itemList) {
-  # return(matrix(unique(unlist(itemList)), ncol = 1, dimnames = list(NULL, "items")))
-  return(unique(unlist(itemList))) # , dimnames = list(NULL, "items"))
 }
 
 # convert itemList to tidlist
