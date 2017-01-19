@@ -145,9 +145,9 @@ opusR_piece <- function(fileName) {
   # return decoded
 }
 
-opusR_int <- function(fileName) {
+# suspect indexing is too slow...
+opusR_file_piece <- function(fileName) {
   index <- NULL
-  tidList <- list()
   ix <- as.integer(0)
   if (is.character(fileName) && file.exists(fileName)) {
     try({
@@ -158,94 +158,85 @@ opusR_int <- function(fileName) {
         n <- v[!(v %in% index)]
         index <- c(index, n)
         u <- match(v, index)
-        m <- max(u)
-        if (length(tidList) < m) {
-          tidList[[m]] <- ix
-          u <- u[-match(m, u)]
-        }
-        tidList[u] <- lapply(tidList[u], append, ix)
+        # print(u)
+        # print(ix)
+        load_data_piece(u, ix)
         ix <- ix + 1
         l <- readLines(f, n = 1)
       }
       close(f)
     })
   }
-  load_data_int(tidList)
   # call cpp, return
   # decode return via index
   # return decoded
-  # print(tidList[[1]][5])
-  return(tidList)
 }
 
-opusR_int_FAST <- function(fileName) {
-  index <- NULL
+opusR_file_whole <- function(fileName) {
+
   tidList <- list()
-  # ix <- as.integer(0)
+
   if (is.character(fileName) && file.exists(fileName)) {
+
     try({
+
       f <- file(fileName, open = "r")
-      d <- readLines(f)
-      d <- strsplit(d, "\\s+")
-      # print(d)
-      index <- unique(unlist(d))
-      vals <- lapply(d, match, index)
-      # print(index)
-      # print(vals)
 
-      # tidList[[length(index) + 1]] <- NULL
-      # tidList[vals] <- 1
+      # type = vector of character
+      raw <- readLines(f)
 
-      i <- getListIndex(vals)
-      v <- unname(unlist(vals, FALSE, FALSE))
+      # print(typeof(raw))
+      # print(class(raw))
+      # print(mode(raw))
 
-      # tidList[[length(index) + 1]] <- 0
-      # tidList[[length(index) + 1]] <- NULL
-      #
-      # tidList[v] <- i
+      # type = list of vector of character
+      items <- strsplit(raw, "\\s+")
 
-      tidList <- unname(split(i, v))
+      # type = vector of character
+      index <- unique(unlist(items, FALSE, FALSE))
 
-      #
-      # tmp <- lapply()
-      #
-      # for (i in 1:length(vals)) {
-      #   tmp <- tidList[vals[[i]]]
-      #
-      #   tidList[vals[[i]]] <- lapply(tidList[vals[[i]]], append, i)
-      #   # print(vals[[i]])
-      # }
+      # replace item value (character) with index value (integer)
+      # type = list of integer
+      # items_int <- lapply(items, match, index)
+      # alternative (test if faster):
+      items_int <- unname(split(match(unlist(items), index),
+                          rep(seq(1, length(items), 1), lengths(items))))
 
+      # flatten
+      # type = vector of integer
+      items_int_flat <- unlist(items_int, recursive = FALSE, use.names = FALSE)
 
-      # while(length(l) != 0) {
-      #   v <- unlist(strsplit(l, "\\s+"))
-      #   n <- v[!(v %in% index)]
-      #   index <- c(index, n)
-      #   u <- match(v, index)
-      #   m <- max(u)
-      #   if (length(tidList) < m) {
-      #     tidList[[m]] <- ix
-      #     u <- u[-match(m, u)]
-      #   }
-      #   tidList[u] <- lapply(tidList[u], append, ix)
-      #   ix <- ix + 1
-      #   l <- readLines(f, n = 1)
-      # }
+      # exchange item index value (integer) with transaction number (integer)
+      # subtract 1 to index from 0 (for C++)
+      # flatten
+      # type = vector of integer
+      trans <- rep(seq_along(items_int), lengths(items_int)) - as.integer(1)
+
+      # forget the english meaning of "split"
+      # split(a, b):
+      # (1) returns a list
+      # (2) puts the elements in *a* in the position (list index) specified in *b*
+      # "swap" the transaction index with the item index number
+      # a bit like a "jagged" transpose of the transaction numbers
+      # type = list of vector of integer
+      tidList <- unname(split(trans, items_int_flat))
+
       close(f)
+
     })
   }
-  load_data_int(tidList)
-  # call cpp, return
-  # decode return via index
-  # return decoded
-  # print(tidList[[1]][5])
-  return(tidList)
+  # load_data_whole(tidList)
+  # toDO:
+  # - call CPP
+  # - reverse CPP value via index
+
+  # return(tidList)
 }
 
-getListIndex <- function(L) {
-  index <- rep(seq_along(L), lengths(L))
-  return(index)
-}
+# getListIndex <- function(L) {
+#   index <- rep(seq_along(L), lengths(L))
+#   return(index)
+# }
 
 # Make index
 makeIndex_itemList <- function(itemList) {
@@ -272,29 +263,4 @@ itemListToTIDList <- function (itemList) {
     }
   }
   return(tidList)
-}
-
-
-testVector <- function() {
-  v <- seq(1, 100, 1)
-  load_data_2(v)
-}
-
-# testList <- function() {
-#   l <- list()
-#   for (i in 1:10) {
-#     l[[i]] <- seq(1, runif(1, 1, 10), 1)
-#   }
-#   print(l)
-#   load_data_3(l)
-# }
-
-makeBigData <- function() {
-  # m <- matrix(data = rep(rep("abcdefghijklmnopqrstuvwxyz", 1e4), 1e4), ncol = 1e4)
-  v <- rep((runif(500, 0, 9)), 1e6)
-  return(v)
-}
-
-passBigData <- function(input) {
-  load_big(input)
 }
