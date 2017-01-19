@@ -99,3 +99,8 @@ void load_data_int(Rcpp::GenericVector tidList) {
   tidy = Rcpp::as< std::vector< std::vector<int> > >(tidList);
   Rcpp::Rcout << tidy[0][4];
 }
+
+// [[Rcpp::export]]
+void load_data_whole(Rcpp::GenericVector tidList) {
+  tidy = Rcpp::as< std::vector< std::vector<int> > >(tidList);
+}
