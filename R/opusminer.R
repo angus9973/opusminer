@@ -245,7 +245,8 @@ opusR_file_whole <- function(fileName) {
                      split(
                        match(unlist(items), index),
                        rep(
-                         seq(1, length(items), 1),
+                         # seq(1, length(items), 1),
+                         seq_along(items), # alt
                          lengths(items)
                          )
                        )
@@ -299,90 +300,63 @@ opusR_file_whole <- function(fileName) {
 opusR_file_whole_FAST <- function(fileName) {
 
   tidList <- list()
-  TT <- list()
 
   if (is.character(fileName) && file.exists(fileName)) {
 
     try({
 
-      TT[[1]] <- Sys.time()
-      # f <- file(fileName, open = "r")
-      raw <- readChar(fileName, nchars = file.info(fileName)$size, useBytes = TRUE)
+      # type = character
+      txt <- readChar(fileName,
+                      nchars = file.info(fileName)$size,
+                      useBytes = TRUE)
 
-      TT[[2]] <- Sys.time()
       # type = vector of character
-      # raw <- readLines(f)
-
-      raw2 <- strsplit(raw, split = "\n", fixed = TRUE)
-
-      TT[[3]] <- Sys.time()
-      # print(typeof(raw))
-      # print(class(raw))
-      # print(mode(raw))
-
+      raw <- strsplit(raw, split = "\n", fixed = TRUE)
 
       # type = list of vector of character
-      items <- strsplit(raw, "\\s+")
+      items <- strsplit(raw, " ", fixed = TRUE) # fixed vector of split = ...
+      # items <- strsplit(raw, "\\s+") # regexp: slow
 
-      TT[[4]] <- Sys.time()
       # type = vector of character
       index <- unique(unlist(items, FALSE, FALSE))
 
-      TT[[5]] <- Sys.time()
       # replace item value (character) with index value (integer)
+      # much faster than "lapply(items, match, index)"
       # type = list of integer
-      # items_int <- lapply(items, match, index)
-      # alternative (test if faster - looks like it):
       items_int <- unname(
         split(
           match(unlist(items), index),
           rep(
-            seq(1, length(items), 1),
+            # seq(1, length(items), 1), # slow
+            seq_along(items), # fast
             lengths(items)
           )
         )
       )
-      # above:
-      #
 
-      TT[[6]] <- Sys.time()
       # flatten
       # type = vector of integer
       items_int_flat <- unlist(items_int, recursive = FALSE, use.names = FALSE)
 
-      TT[[7]] <- Sys.time()
       # exchange item index value (integer) with transaction number (integer)
       # subtract 1 to index from 0 (for C++)
       # flatten
       # type = vector of integer
       trans <- rep(seq_along(items_int), lengths(items_int)) - as.integer(1)
 
-      TT[[8]] <- Sys.time()
-      # forget the english meaning of "split"
-      # split(a, b):
-      # (1) returns a list
-      # (2) puts the elements in *a* in the position (list index) specified in *b*
-      # "swap" the transaction index with the item index number
-      # a bit like a "jagged" transpose of the transaction numbers
+      # C <- split(A, B): place each element of A, A[i], at C[[B[i]]]
+      # ie, "swap" the transaction number with the item index number
+      # ie, like a "jagged" transpose of the transaction numbers and the item index nubmers
       # type = list of vector of integer
       tidList <- unname(split(trans, items_int_flat))
-
-      TT[[9]] <- Sys.time()
-      close(f)
 
     })
   }
   load_data_whole(tidList)
-  TT[[10]] <- Sys.time()
+
   # toDO:
   # - call CPP
   # - reverse CPP value via index
-
-  # to check memory footprint in try({}) block, above
-  # return(tidList)
-  # return(index)
-  # print(TT[[2]] - TT[[1]])
-  cat(format(diff(unlist(TT)), digits = 6), sep = "\n")
 }
 
 # getListIndex <- function(L) {
