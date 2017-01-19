@@ -30,6 +30,7 @@
 #include "globals.h"
 #include "load_data.h"
 
+#include "find_itemsets.h"
 
 void load_data(Rcpp::GenericVector input) {
 
@@ -77,30 +78,55 @@ void load_data(Rcpp::GenericVector input) {
 //   Rcpp::Rcout << &test;
 // }
 
-std::vector<tidset> tidx;
-std::vector< std::vector<int> > tidy;
+// std::vector<tidset> tidx;
+// std::vector< std::vector<int> > tidy;
+//
+// typedef std::vector<TID> ABC;
+// // ABC aa;
+// // std::vector<int> bb = aa;
+//
+// Rcpp::IntegerVector cc;
+// ABC dd = Rcpp::as< ABC >(cc);
 
-// [[Rcpp::export]]
-void load_data_piece(Rcpp::IntegerVector items, int trans) {
-  int s = Rcpp::max(items) + 1; // indexing from 0
-  if (s > tidx.size()) {
-    tidx.resize(s);
-  }
-  for (int i = 0; i < items.size(); i++) {
-  //   tidx[items[i]].push_back(trans);
-    // Rcpp::Rcout << " | s = " << s << ", tix.size = " << tidx.size()
-    //             << ", items[i] = " << items[i];
-    tidx[items[i]].push_back(trans);
-  }
-}
+// *****
+// typedef std::vector< std::vector<int> > DEF;
+//
+// Rcpp::GenericVector ee;
+// DEF ff = Rcpp::as< DEF >(ee);
+//
+// Rcpp::GenericVector gg;
+// std::vector< tidset > hh = Rcpp::as< std::vector<tidset> >(gg);
+// *****
 
-// [[Rcpp::export]]
-void load_data_int(Rcpp::GenericVector tidList) {
-  tidy = Rcpp::as< std::vector< std::vector<int> > >(tidList);
-  Rcpp::Rcout << tidy[0][4];
+// // [[Rcpp::export]]
+// void load_data_piece(Rcpp::IntegerVector items, int trans) {
+//   int s = Rcpp::max(items) + 1; // indexing from 0
+//   if (s > tidx.size()) {
+//     tidx.resize(s);
+//   }
+//   for (int i = 0; i < items.size(); i++) {
+//   //   tidx[items[i]].push_back(trans);
+//     // Rcpp::Rcout << " | s = " << s << ", tix.size = " << tidx.size()
+//     //             << ", items[i] = " << items[i];
+//     tidx[items[i]].push_back(trans);
+//   }
+// }
+
+// typedef std::vector<TID> tx;
+
+void init() {
+  alpha = std::vector<double>();                 // globals.cpp
+  tids = std::vector<tidset>();                  // globals.cpp
+  itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
+  itemNames = std::vector<std::string>();        // globals.cpp
+  minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
 }
 
 // [[Rcpp::export]]
 void load_data_whole(Rcpp::GenericVector tidList) {
-  tidy = Rcpp::as< std::vector< std::vector<int> > >(tidList);
+  init();
+  // tidy = Rcpp::as< std::vector< std::vector<TID> > >(tidList);
+  // Rcpp::Rcout << tidy[0].size() << tidy[1].size();
+  // std::vector< tidset > XYZ = Rcpp::as< std::vector< tidset > >(tidList);
+  tids = Rcpp::as< std::vector< tidset > >(tidList);
 }
