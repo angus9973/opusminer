@@ -5,12 +5,12 @@
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -23,13 +23,16 @@
 #include "opus_miner.h"
 
 // store tids as an ordered vector of ints
-class tidset :
-  public std::vector<TID>
-{
-public:
-  tidset(void);
-  ~tidset(void);
-};
+// class tidset :
+//   public std::vector<TID>
+// {
+// public:
+//   tidset(void);
+//   ~tidset(void);
+//   // operator std::vector<int>() const {return std::vector<int>();}
+// };
+
+typedef std::vector<TID> tidset;
 
 inline int count_intersection(tidset &s1, tidset &s2) {
   // count the size of the intersection
@@ -161,7 +164,7 @@ inline void dintersection(tidset &s1, tidset &s2) {
 inline void dunion(tidset &s1, tidset &s2) {
   tidset result;
 
-  tidset::const_iterator it1 = s1.begin(); 
+  tidset::const_iterator it1 = s1.begin();
   tidset::const_iterator it2 = s2.begin();
 
   while (true) {
