@@ -68,3 +68,34 @@ void load_data(Rcpp::GenericVector input) {
     noOfTransactions++;
   }
 }
+
+// // [[Rcpp::export]]
+// void load_data_2(Rcpp::NumericVector input) {
+//   std::vector<int> test = Rcpp::as< std::vector<int> >(input);
+//   // Rcpp::Rcout << test[0];
+//   Rcpp::Rcout << &input;
+//   Rcpp::Rcout << &test;
+// }
+
+std::vector<tidset> tidx;
+std::vector< std::vector<int> > tidy;
+
+// [[Rcpp::export]]
+void load_data_piece(Rcpp::IntegerVector items, int trans) {
+  int s = Rcpp::max(items) + 1; // indexing from 0
+  if (s > tidx.size()) {
+    tidx.resize(s);
+  }
+  for (int i = 0; i < items.size(); i++) {
+  //   tidx[items[i]].push_back(trans);
+    // Rcpp::Rcout << " | s = " << s << ", tix.size = " << tidx.size()
+    //             << ", items[i] = " << items[i];
+    tidx[items[i]].push_back(trans);
+  }
+}
+
+// [[Rcpp::export]]
+void load_data_int(Rcpp::GenericVector tidList) {
+  tidy = Rcpp::as< std::vector< std::vector<int> > >(tidList);
+  Rcpp::Rcout << tidy[0][4];
+}
