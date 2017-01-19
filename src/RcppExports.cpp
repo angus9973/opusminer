@@ -6,14 +6,25 @@
 
 using namespace Rcpp;
 
-// get_tids
-Rcpp::XPtr< std::vector<tidset> > get_tids();
-RcppExport SEXP opusminer_get_tids() {
+// load_data_piece
+void load_data_piece(Rcpp::IntegerVector items, int trans);
+RcppExport SEXP opusminer_load_data_piece(SEXP itemsSEXP, SEXP transSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(get_tids());
-    return rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type items(itemsSEXP);
+    Rcpp::traits::input_parameter< int >::type trans(transSEXP);
+    load_data_piece(items, trans);
+    return R_NilValue;
+END_RCPP
+}
+// load_data_int
+void load_data_int(Rcpp::GenericVector tidList);
+RcppExport SEXP opusminer_load_data_int(SEXP tidListSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::GenericVector >::type tidList(tidListSEXP);
+    load_data_int(tidList);
+    return R_NilValue;
 END_RCPP
 }
 // opusHelper
