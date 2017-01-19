@@ -6,37 +6,25 @@
 
 using namespace Rcpp;
 
-// load_data_piece
-void load_data_piece(Rcpp::IntegerVector items, int trans);
-RcppExport SEXP opusminer_load_data_piece(SEXP itemsSEXP, SEXP transSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type items(itemsSEXP);
-    Rcpp::traits::input_parameter< int >::type trans(transSEXP);
-    load_data_piece(items, trans);
-    return R_NilValue;
-END_RCPP
-}
-// load_data_int
-void load_data_int(Rcpp::GenericVector tidList);
-RcppExport SEXP opusminer_load_data_int(SEXP tidListSEXP) {
+// load_data_whole
+void load_data_whole(Rcpp::GenericVector tidList);
+RcppExport SEXP opusminer_load_data_whole(SEXP tidListSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::GenericVector >::type tidList(tidListSEXP);
-    load_data_int(tidList);
+    load_data_whole(tidList);
     return R_NilValue;
 END_RCPP
 }
 // opusHelper
-Rcpp::GenericVector opusHelper(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector args);
-RcppExport SEXP opusminer_opusHelper(SEXP inputSEXP, SEXP k_SEXP, SEXP argsSEXP) {
+Rcpp::GenericVector opusHelper(Rcpp::NumericVector k_, Rcpp::LogicalVector args);
+RcppExport SEXP opusminer_opusHelper(SEXP k_SEXP, SEXP argsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::GenericVector >::type input(inputSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type k_(k_SEXP);
     Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type args(argsSEXP);
-    rcpp_result_gen = Rcpp::wrap(opusHelper(input, k_, args));
+    rcpp_result_gen = Rcpp::wrap(opusHelper(k_, args));
     return rcpp_result_gen;
 END_RCPP
 }
