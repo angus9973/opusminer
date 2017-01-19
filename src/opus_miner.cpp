@@ -46,24 +46,24 @@
 
 std::priority_queue<itemsetRec> itemsets;
 
-void init() {
-  alpha = std::vector<double>();                 // globals.cpp
-  tids = std::vector<tidset>();                  // globals.cpp
-  itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
-  itemNames = std::vector<std::string>();        // globals.cpp
-  minValue = -std::numeric_limits<float>::max(); // load_data.cpp
-}
+// void init() {
+//   alpha = std::vector<double>();                 // globals.cpp
+//   tids = std::vector<tidset>();                  // globals.cpp
+//   itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
+//   itemNames = std::vector<std::string>();        // globals.cpp
+//   minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
+// }
 
 Rcpp::GenericVector
 #ifdef _WIN32
   __cdecl // Leading double underscore required for GCC compiler
 #endif
-opusCPP(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
+opusCPP(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
   #ifdef _DEBUG
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
   #endif
 
-  init();
+  // init();
 
   std::vector<itemsetRec> is;
 
@@ -86,8 +86,8 @@ opusCPP(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector a
 
   try {
     // printf("\nLoading data from %s\n", inputFileName);
-    Rcpp::Rcout << "\nLoading data...\n";
-    load_data(input);
+    // Rcpp::Rcout << "\nLoading data...\n";
+    // load_data(input);
 
     // printf("%d transactions, %d items\n", noOfTransactions, noOfItems);
     Rcpp::Rcout << noOfTransactions << " transactions, " << noOfItems << " items\n";
@@ -139,7 +139,8 @@ opusCPP(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector a
     // fprintf(outf, "Found %ld non-redundant productive itemsets in %ld seconds\n", static_cast<long>(is.size()), tm);
     Rcpp::Rcout << "Found " << static_cast<long>(is.size()) << " non-redundant productive itemsets in " << tm << " seconds\n";
 
-    output= get_itemsets(is);
+    // ***** need to move index decoding to R *****
+    // output = get_itemsets(is);
 
     #ifdef _WIN32
       time_t end_t = time(NULL);
@@ -184,6 +185,6 @@ opusCPP(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector a
 }
 
 // [[Rcpp::export(.opusHelper)]]
-Rcpp::GenericVector opusHelper(Rcpp::GenericVector input, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
-  return opusCPP(input, k_, args);
+Rcpp::GenericVector opusHelper(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
+  return opusCPP(k_, args);
 }
