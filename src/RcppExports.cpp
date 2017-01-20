@@ -6,13 +6,25 @@
 
 using namespace Rcpp;
 
+// load_data
+void load_data(Rcpp::GenericVector input);
+RcppExport SEXP opusminer_load_data(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::GenericVector >::type input(inputSEXP);
+    load_data(input);
+    return R_NilValue;
+END_RCPP
+}
 // load_data_whole
-void load_data_whole(Rcpp::GenericVector tidList);
-RcppExport SEXP opusminer_load_data_whole(SEXP tidListSEXP) {
+void load_data_whole(Rcpp::GenericVector tidList, int numItems, int numTrans);
+RcppExport SEXP opusminer_load_data_whole(SEXP tidListSEXP, SEXP numItemsSEXP, SEXP numTransSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::GenericVector >::type tidList(tidListSEXP);
-    load_data_whole(tidList);
+    Rcpp::traits::input_parameter< int >::type numItems(numItemsSEXP);
+    Rcpp::traits::input_parameter< int >::type numTrans(numTransSEXP);
+    load_data_whole(tidList, numItems, numTrans);
     return R_NilValue;
 END_RCPP
 }
