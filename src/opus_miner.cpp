@@ -37,7 +37,7 @@
 
 #include "opus_miner.h"
 #include "globals.h"
-#include "load_data.h"
+// #include "load_data.h"
 #include "find_itemsets.h"
 #include "print_itemsets.h"
 #include "filter_itemsets.h"
@@ -46,24 +46,27 @@
 
 std::priority_queue<itemsetRec> itemsets;
 
-// void init() {
-//   alpha = std::vector<double>();                 // globals.cpp
-//   tids = std::vector<tidset>();                  // globals.cpp
-//   itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
-//   itemNames = std::vector<std::string>();        // globals.cpp
-//   minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
-// }
+void init() {
+  alpha = std::vector<double>();                 // globals.cpp
+  tids = std::vector<tidset>();                  // globals.cpp
+  itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
+  itemNames = std::vector<std::string>();        // globals.cpp
+  minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
+}
 
 Rcpp::GenericVector
 #ifdef _WIN32
   __cdecl // Leading double underscore required for GCC compiler
 #endif
-opusCPP(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
+opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
   #ifdef _DEBUG
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
   #endif
 
-  // init();
+  init();
+  tids = Rcpp::as< std::vector< tidset > >(tidList);
+  noOfItems = numItems;
+  noOfTransactions = numTrans;
 
   std::vector<itemsetRec> is;
 
@@ -90,12 +93,14 @@ opusCPP(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
     // load_data(input);
 
     // printf("%d transactions, %d items\n", noOfTransactions, noOfItems);
-    Rcpp::Rcout << noOfTransactions << " transactions, " << noOfItems << " items\n";
+    // Rcpp::Rcout << noOfTransactions << " transactions, " << noOfItems << " items\n";
 
     // fprintf(outf, "\n%s: %ld items, %ld transactions\n", inputFileName, static_cast<long>(noOfItems), static_cast<long>(noOfTransactions));
 
     // printf("Finding itemsets\n");
-    Rcpp::Rcout << "Finding itemsets...\n";
+    Rcpp::Rcout << "Finding itemsets ("
+                << noOfTransactions << " transactions, "
+                << noOfItems << " items)...\n\n";
 
     #ifdef _WIN32
       time_t find_start_t = time(NULL);
@@ -113,6 +118,8 @@ opusCPP(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
       times(&find_end_t);
     #endif // _WIN32
 
+    Rcpp::Rcout << " (" << find_end_t-find_start_t << " seconds)\n\n";
+
     // extract the itemsets from the priority queue
     while (!itemsets.empty()) {
       is.push_back(itemsets.top());
@@ -121,7 +128,7 @@ opusCPP(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
 
     if (filter) {
       // printf("Filtering itemsets\n");
-      Rcpp::Rcout << "Filtering itemsets...\n";
+      Rcpp::Rcout << "Filtering itemsets...";
       filter_itemsets(is);
     }
 
@@ -136,41 +143,43 @@ opusCPP(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
       const long tm = static_cast<long>(print_start_t.tms_utime-find_start_t.tms_utime) / sysconf(_SC_CLK_TCK);
     #endif // _WIN32
 
+    Rcpp::Rcout << " (" << print_start_t-find_end_t << " seconds)\n\n";
+
     // fprintf(outf, "Found %ld non-redundant productive itemsets in %ld seconds\n", static_cast<long>(is.size()), tm);
-    Rcpp::Rcout << "Found " << static_cast<long>(is.size()) << " non-redundant productive itemsets in " << tm << " seconds\n";
+    // Rcpp::Rcout << "Found " << static_cast<long>(is.size()) << " non-redundant productive itemsets in " << tm << " seconds\n";
 
     // ***** need to move index decoding to R *****
     // output = get_itemsets(is);
 
-    #ifdef _WIN32
-      time_t end_t = time(NULL);
-    #else
-      struct tms end_t;
-      times(&end_t);
-    #endif // _WIN32
+    // #ifdef _WIN32
+    //   time_t end_t = time(NULL);
+    // #else
+    //   struct tms end_t;
+    //   times(&end_t);
+    // #endif // _WIN32
 
-    #ifdef _WIN32
-      const long t =  static_cast<long>(end_t-start_t);
-
-      // printf("%ld seconds (%ld input, %ld search, %ld filter, %ld output)", t, static_cast<long>(find_start_t-start_t), static_cast<long>(find_end_t-find_start_t), static_cast<long>(print_start_t-find_end_t), static_cast<long>(end_t-print_start_t));
-      Rcpp::Rcout
-        << t << " seconds ("
-        << static_cast<long>(find_start_t-start_t) << " input, "
-        << static_cast<long>(find_end_t-find_start_t) << " search, "
-        << static_cast<long>(print_start_t-find_end_t) << " filter)";
-    #else
-      const long ticks_sec = sysconf(_SC_CLK_TCK);
-      const long t = static_cast<long>(end_t.tms_utime-start_t.tms_utime) / ticks_sec;
-
-      // printf("%ld seconds (%ld input, %ld search, %ld filter, %ld output)", t, static_cast<long>(find_start_t.tms_utime-start_t.tms_utime)/ticks_sec, static_cast<long>(find_end_t.tms_utime-find_start_t.tms_utime)/ticks_sec, static_cast<long>(print_start_t.tms_utime-find_end_t.tms_utime)/ticks_sec, static_cast<long>(end_t.tms_utime-print_start_t.tms_utime)/ticks_sec);
-      Rcpp::Rcout
-        << t << " seconds ("
-        << static_cast<long>(find_start_t.tms_utime-start_t.tms_utime)/ticks_sec << " input, "
-        << static_cast<long>(find_end_t.tms_utime-find_start_t.tms_utime)/ticks_sec << " search, "
-        << static_cast<long>(print_start_t.tms_utime-find_end_t.tms_utime)/ticks_sec << " filter)";
-    #endif // _WIN32
+    // #ifdef _WIN32
+    //   const long t =  static_cast<long>(end_t-start_t);
+    //
+    //   // printf("%ld seconds (%ld input, %ld search, %ld filter, %ld output)", t, static_cast<long>(find_start_t-start_t), static_cast<long>(find_end_t-find_start_t), static_cast<long>(print_start_t-find_end_t), static_cast<long>(end_t-print_start_t));
+    //   Rcpp::Rcout
+    //     << t << " seconds ("
+    //     << static_cast<long>(find_start_t-start_t) << " input, "
+    //     << static_cast<long>(find_end_t-find_start_t) << " search, "
+    //     << static_cast<long>(print_start_t-find_end_t) << " filter)";
+    // #else
+    //   const long ticks_sec = sysconf(_SC_CLK_TCK);
+    //   const long t = static_cast<long>(end_t.tms_utime-start_t.tms_utime) / ticks_sec;
+    //
+    //   // printf("%ld seconds (%ld input, %ld search, %ld filter, %ld output)", t, static_cast<long>(find_start_t.tms_utime-start_t.tms_utime)/ticks_sec, static_cast<long>(find_end_t.tms_utime-find_start_t.tms_utime)/ticks_sec, static_cast<long>(print_start_t.tms_utime-find_end_t.tms_utime)/ticks_sec, static_cast<long>(end_t.tms_utime-print_start_t.tms_utime)/ticks_sec);
+    //   Rcpp::Rcout
+    //     << t << " seconds ("
+    //     << static_cast<long>(find_start_t.tms_utime-start_t.tms_utime)/ticks_sec << " input, "
+    //     << static_cast<long>(find_end_t.tms_utime-find_start_t.tms_utime)/ticks_sec << " search, "
+    //     << static_cast<long>(print_start_t.tms_utime-find_end_t.tms_utime)/ticks_sec << " filter)";
+    // #endif // _WIN32
     // printf(" for %ld itemsets\n", static_cast<long>(is.size()));
-    Rcpp::Rcout << " for " << static_cast<long>(is.size()) << " itemsets\n";
+    // Rcpp::Rcout << " for " << static_cast<long>(is.size()) << " itemsets\n";
   }
   catch (std::bad_alloc) {
     // fprintf(stderr, "Out of memory\n");
@@ -185,6 +194,6 @@ opusCPP(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
 }
 
 // [[Rcpp::export(.opusHelper)]]
-Rcpp::GenericVector opusHelper(Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
-  return opusCPP(k_, args);
+Rcpp::GenericVector opusHelper(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
+  return opusCPP(tidList, numItems, numTrans, k_, args);
 }
