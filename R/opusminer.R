@@ -58,11 +58,13 @@ opusR <- function(fileName,
 
     cat(opusHeader, sep = "\n")
 
-    output <- .opusHelper(input,
-                          k,
-                          args)
+    # output <- .opusHelper(input,
+    #                       k,
+    #                       args)
 
-    return(output)
+    load_data(input)
+
+    # return(output)
 
   } else {
     cat("ERROR")
@@ -332,7 +334,8 @@ opusR_file_whole <- function(fileName) {
 # or less?
 opusR_file_whole_FAST <- function(fileName) {
 
-  tidList <- list()
+  # Doesn't need to be initialised (here or anywhere): restrict to "try" block
+  # tidList <- list()
 
   if (is.character(fileName) && file.exists(fileName)) {
 
@@ -343,6 +346,8 @@ opusR_file_whole_FAST <- function(fileName) {
                       nchars = file.info(fileName)$size,
                       useBytes = TRUE)
 
+      # strsplit returns list (of vector of character)
+      # in this case: list of length one; get first (and only) vector only
       # type = vector of character
       raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
 
@@ -350,8 +355,17 @@ opusR_file_whole_FAST <- function(fileName) {
       items <- strsplit(raw, " ", fixed = TRUE) # fixed vector of split = ...
       # items <- strsplit(raw, "\\s+") # regexp: slow
 
+      # ***NEW*** (alt)
+      numTrans <- length(items)
+
+      # # ***NEW***
+      # numItems <- length(items)
+
       # type = vector of character
       index <- unique(unlist(items, FALSE, FALSE))
+
+      # ***NEW*** (alt)
+      numItems <- length(index)
 
       # replace item value (character) with index value (integer)
       # much faster than "lapply(items, match, index)"
@@ -383,11 +397,22 @@ opusR_file_whole_FAST <- function(fileName) {
       # type = list of vector of integer
       tidList <- unname(split(trans, items_int_flat))
 
+      # # ***NEW***
+      # numTrans <- length(tidList)
+
+      # replace *tidList* with *unname(split(...))* ?
+      load_data_whole(tidList, numItems, numTrans)
+
+      # print(numItems)
+      # print(numTrans)
+
     })
   }
-  load_data_whole(tidList)
+  # Move up to try({...}) block...
+  # load_data_whole(tidList)
 
-  return(opusR_2())
+  # return(opusR_2())
+  opusR_2()
   # toDO:
   # - convert r object on cpp side properly
   # - call CPP main function
