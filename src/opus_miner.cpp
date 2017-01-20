@@ -54,6 +54,10 @@ void init() {
   minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
 }
 
+// bool valgt(itemsetRec i1, itemsetRec i2) {
+//   return i1.value > i2.value;
+// }
+
 Rcpp::GenericVector
 #ifdef _WIN32
   __cdecl // Leading double underscore required for GCC compiler
@@ -150,6 +154,8 @@ opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVe
 
     // ***** need to move index decoding to R *****
     // output = get_itemsets(is);
+    std::sort(is.begin(), is.end(), valgt);
+    output = Rcpp::wrap(is);
 
     // #ifdef _WIN32
     //   time_t end_t = time(NULL);
