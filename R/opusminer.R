@@ -26,6 +26,7 @@ opusR_ <- function(f = NULL,         # file
 
   # check
 
+  # tmp <- NULL # to capture tidList for comparison
   output <- NULL
 
   if (is.character(f) && file.exists(f)) {
@@ -34,7 +35,8 @@ opusR_ <- function(f = NULL,         # file
 
       cat("Reading file...")
 
-      T1 <- Sys.time()
+      # T1 <- Sys.time()
+      T1 <- proc.time()[3]
 
       # type = character
       raw <- readChar(f, file.info(f)$size, TRUE)
@@ -85,17 +87,43 @@ opusR_ <- function(f = NULL,         # file
       # type = list of vector of integer
       tidList <- unname(split(trans, items_int_flat))
 
-      T2 <- Sys.time()
+      # T2 <- Sys.time()
+      T2 <- proc.time()[3]
 
       cat(" (", round(T2 - T1, 2), " seconds)\n\n", sep = "")
       output <- .opusHelper(tidList, noOfItems, noOfTransactions, k, p)
 
-      T3 <- Sys.time()
+      # T3 <- Sys.time()
+      T3 <- proc.time()[3]
 
       cat("Total time: ", round(T3 - T1, 2), " seconds.\n", sep = "")
 
+      # tmp <- tidList
+      # tmp <- index
+
+      # OPTIMISE... (duplicate/reverse split method, above?)
+      # Test for LARGE output sizes
+      output <- lapply(output, function(i){i + 1}) # index from 1 (cf 0)
+      output <- lapply(output, function(v){index[v]}) # "decode"
+
+      # need to get other components of output as well
+
+      # or above two together:
+      # output <- lapply(output, function(v){index[v + 1]}) # "decode"
+
+      # T4 <- Sys.time()
+      T4 <- proc.time()[3]
+
+      cat("**Decode time: ", round(T4 - T3, 2), " seconds.**\n")
+
     }) # try({...
   } # if (is.character(f) && file.exists(f)) {...
+
+  # output <- lapply(output, function(x){x + 1})
+  # reversed <- index[unlist(output)]
+
+  # return(list(output, tmp))
+  return(output)
 }
 
 # Wrap opusCPP() (via opusHelper())
