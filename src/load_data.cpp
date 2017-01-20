@@ -32,43 +32,43 @@
 
 #include "find_itemsets.h"
 
-void load_data(Rcpp::GenericVector input) {
-
-  std::map<std::string, itemID> itemstrs;
-  std::string s;
-
-  noOfTransactions = 0;
-  noOfItems = 0;
-
-  for (int i = 0; i < input.size(); i++) {
-
-    Rcpp::CharacterVector transaction = input[i];
-
-    for (int j = 0; j < transaction.size(); j++) {
-
-      s = transaction[j];
-
-      itemID thisid;
-      std::map<std::string, itemID>::const_iterator it = itemstrs.find(s);
-
-      if (it == itemstrs.end()) {
-        thisid = itemNames.size();
-        itemstrs[s] = thisid;
-        itemNames.push_back(s);
-        noOfItems = itemNames.size();
-        tids.resize(noOfItems);
-      }
-      else {
-        thisid = it->second;
-      }
-
-      if (tids[thisid].empty() || *tids[thisid].rbegin() != noOfTransactions) {
-        tids[thisid].push_back(noOfTransactions);
-      }
-    }
-    noOfTransactions++;
-  }
-}
+// void load_data(Rcpp::GenericVector input) {
+//
+//   std::map<std::string, itemID> itemstrs;
+//   std::string s;
+//
+//   noOfTransactions = 0;
+//   noOfItems = 0;
+//
+//   for (int i = 0; i < input.size(); i++) {
+//
+//     Rcpp::CharacterVector transaction = input[i];
+//
+//     for (int j = 0; j < transaction.size(); j++) {
+//
+//       s = transaction[j];
+//
+//       itemID thisid;
+//       std::map<std::string, itemID>::const_iterator it = itemstrs.find(s);
+//
+//       if (it == itemstrs.end()) {
+//         thisid = itemNames.size();
+//         itemstrs[s] = thisid;
+//         itemNames.push_back(s);
+//         noOfItems = itemNames.size();
+//         tids.resize(noOfItems);
+//       }
+//       else {
+//         thisid = it->second;
+//       }
+//
+//       if (tids[thisid].empty() || *tids[thisid].rbegin() != noOfTransactions) {
+//         tids[thisid].push_back(noOfTransactions);
+//       }
+//     }
+//     noOfTransactions++;
+//   }
+// }
 
 // // [[Rcpp::export]]
 // void load_data_2(Rcpp::NumericVector input) {
@@ -114,19 +114,16 @@ void load_data(Rcpp::GenericVector input) {
 
 // typedef std::vector<TID> tx;
 
-void init() {
-  alpha = std::vector<double>();                 // globals.cpp
-  tids = std::vector<tidset>();                  // globals.cpp
-  itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
-  itemNames = std::vector<std::string>();        // globals.cpp
-  minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
-}
-
-// [[Rcpp::export]]
-void load_data_whole(Rcpp::GenericVector tidList) {
-  init();
-  // tidy = Rcpp::as< std::vector< std::vector<TID> > >(tidList);
-  // Rcpp::Rcout << tidy[0].size() << tidy[1].size();
-  // std::vector< tidset > XYZ = Rcpp::as< std::vector< tidset > >(tidList);
-  tids = Rcpp::as< std::vector< tidset > >(tidList);
-}
+// void init() {
+//   alpha = std::vector<double>();                 // globals.cpp
+//   tids = std::vector<tidset>();                  // globals.cpp
+//   itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
+//   itemNames = std::vector<std::string>();        // globals.cpp
+//   minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
+// }
+//
+// // [[Rcpp::export]]
+// void load_data_whole(Rcpp::GenericVector tidList) {
+//   init();
+//   tids = Rcpp::as< std::vector< tidset > >(tidList);
+// }
