@@ -6,37 +6,28 @@
 
 using namespace Rcpp;
 
-// load_data
-void load_data(Rcpp::GenericVector input);
-RcppExport SEXP opusminer_load_data(SEXP inputSEXP) {
+// get_tids
+Rcpp::XPtr< std::vector<tidset> > get_tids();
+RcppExport SEXP opusminer_get_tids() {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::GenericVector >::type input(inputSEXP);
-    load_data(input);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(get_tids());
+    return rcpp_result_gen;
 END_RCPP
 }
-// load_data_whole
-void load_data_whole(Rcpp::GenericVector tidList, int numItems, int numTrans);
-RcppExport SEXP opusminer_load_data_whole(SEXP tidListSEXP, SEXP numItemsSEXP, SEXP numTransSEXP) {
+// opusHelper
+Rcpp::GenericVector opusHelper(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args);
+RcppExport SEXP opusminer_opusHelper(SEXP tidListSEXP, SEXP numItemsSEXP, SEXP numTransSEXP, SEXP k_SEXP, SEXP argsSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::GenericVector >::type tidList(tidListSEXP);
     Rcpp::traits::input_parameter< int >::type numItems(numItemsSEXP);
     Rcpp::traits::input_parameter< int >::type numTrans(numTransSEXP);
-    load_data_whole(tidList, numItems, numTrans);
-    return R_NilValue;
-END_RCPP
-}
-// opusHelper
-Rcpp::GenericVector opusHelper(Rcpp::NumericVector k_, Rcpp::LogicalVector args);
-RcppExport SEXP opusminer_opusHelper(SEXP k_SEXP, SEXP argsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type k_(k_SEXP);
     Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type args(argsSEXP);
-    rcpp_result_gen = Rcpp::wrap(opusHelper(k_, args));
+    rcpp_result_gen = Rcpp::wrap(opusHelper(tidList, numItems, numTrans, k_, args));
     return rcpp_result_gen;
 END_RCPP
 }
