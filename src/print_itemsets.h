@@ -16,3 +16,4 @@
 */
 
 extern Rcpp::GenericVector get_itemsets(std::vector<itemsetRec> &is);
+bool valgt(itemsetRec i1, itemsetRec i2);
