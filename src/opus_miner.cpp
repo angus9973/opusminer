@@ -67,7 +67,7 @@ opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVe
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
   #endif
 
-  init();
+  // init();
   tids = Rcpp::as< std::vector< tidset > >(tidList);
   noOfItems = numItems;
   noOfTransactions = numTrans;
@@ -153,9 +153,11 @@ opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVe
     // Rcpp::Rcout << "Found " << static_cast<long>(is.size()) << " non-redundant productive itemsets in " << tm << " seconds\n";
 
     // ***** need to move index decoding to R *****
-    // output = get_itemsets(is);
-    std::sort(is.begin(), is.end(), valgt);
-    output = Rcpp::wrap(is);
+    output = get_itemsets(is);
+
+    // std::sort(is.begin(), is.end(), valgt);
+    // output = Rcpp::wrap(is);
+    // is.
 
     // #ifdef _WIN32
     //   time_t end_t = time(NULL);
