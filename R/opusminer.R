@@ -13,11 +13,11 @@ opusHeader <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Suffic
 opusR_ <- function(f = NULL,         # file
                    d = NULL,         # data
                    k = 100,          # k
-                   p = c(pc = FALSE,  # printClosures
-                         fi = TRUE, # filterItemsets
-                         sl = FALSE,
+                   p = c(pc = FALSE, # printClosures
+                         fi = TRUE,  # filterItemsets
+                         sl = FALSE, # searchByLift
                          cf = TRUE,  # correctForMultCompare
-                         rd = TRUE) # redundancyTests
+                         rd = TRUE)  # redundancyTests
                    ) {
 
   cat("HEADER", "\n\n")
@@ -103,8 +103,14 @@ opusR_ <- function(f = NULL,         # file
 
       # OPTIMISE... (duplicate/reverse split method, above?)
       # Test for LARGE output sizes
-      output <- lapply(output, function(i){i + 1}) # index from 1 (cf 0)
-      output <- lapply(output, function(v){index[v]}) # "decode"
+      # output <- lapply(output, function(i){i + 1}) # index from 1 (cf 0)
+      # output <- lapply(output, function(v){index[v]}) # "decode"
+
+      # or "output$itemset"
+      output[[1]] <- lapply(output[[1]], function(i){i + 1}) # index from 1 (cf 0)
+      output[[1]] <- lapply(output[[1]], function(v){index[v]}) # "decode"
+
+        # list(,)
 
       # need to get other components of output as well
 
@@ -277,4 +283,11 @@ itemListToTIDList <- function (itemList) {
     }
   }
   return(tidList)
+}
+
+getRecords <- function(itemset, index = NULL) {
+  if (is.null(index)) {
+    index = 1:length(itemset[[1]])
+  }
+  return(as.data.frame(sapply(itemset, "[", index)))
 }
