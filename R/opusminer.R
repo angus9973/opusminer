@@ -1,25 +1,18 @@
-# Header (from original opus_miner.cpp)
-opusHeader <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets",
-                "Version 1.2",
-                "Copyright (C) 2012-2016 Geoffrey I Webb",
-                "This program comes with ABSOLUTELY NO WARRANTY. This is free software,",
-                "and you are welcome to redistribute it under certain conditions.",
-                "See the GNU General Public Licence <http://www.gnu.org/licenses/> for details.",
-                "",
-                "If you publish results obtained by using this software please cite:",
-                "  Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting Associations.",
-                "  ACM Transactions on Knowledge Discovery from Data. 8(3), Art. no. 15.")
+# opusR(...)
+# To consider:
+#   - convert itemlist -> tidlist
+#   - what about null items? (impossible if indexed properly... contiguous)
+#   - ...
+#   - clean up + rearrange code, remove duplication, for file vs data input
 
-# add: "convert" parameter, do conversion as in file-reading but on already-existing data
-# converstion itemlist -> tidlist
-opusR_ <- function(f = NULL,         # file
-                   d = NULL,         # data
-                   k = 100,          # k
-                   pc = FALSE, # printClosures
-                   fi = TRUE,  # filterItemsets
-                   sl = FALSE, # searchByLift
-                   cf = TRUE,  # correctForMultCompare
-                   rd = TRUE)  # redundancyTests
+opusR <- function(f = NULL,   # file
+                  d = NULL,   # data : list of numeric
+                  k = 100,    # k
+                  pc = FALSE, # printClosures
+                  fi = TRUE,  # filterItemsets
+                  sl = FALSE, # searchByLift
+                  cf = TRUE,  # correctForMultCompare
+                  rd = TRUE)  # redundancyTests
   {
 
   cat("HEADER", "\n\n")
@@ -29,7 +22,13 @@ opusR_ <- function(f = NULL,         # file
 
   output <- NULL
 
-  if (is.character(f) && file.exists(f)) {
+  if (is.null(d) & is.null(f)) {
+    message("[provide filename or indexed tidlist]")
+  } else if (is.null(f) & !is.null(d)) {
+    try({
+      output <- .opusHelper(d, length(d), max(unlist(d)), k, p)
+    })
+  } else if (is.character(f) && file.exists(f)) {
 
     try({
 
@@ -111,6 +110,46 @@ opusR_ <- function(f = NULL,         # file
   return(output)
 }
 
+readItemList <- function(f) {
+  items <- NULL
+  if (is.character(f) && file.exists(f)) {
+    try({
+      raw <- readChar(f, file.info(f)$size, TRUE)
+      raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
+      items <- strsplit(raw, " ", fixed = TRUE)
+    })
+  } else {
+    message("ERROR")
+  }
+  return(items)
+}
+
+# readTIDSet <- function(){}
+
+itemListToTIDList <- function(items) {
+
+  index <- unique(unlist(items, FALSE, FALSE))
+
+  items_int <- unname(
+    split(
+      match(unlist(items), index),
+      rep(
+        seq_along(items),
+        lengths(items)
+      )
+    )
+  )
+
+  items_int_flat <- unlist(items_int, recursive = FALSE, use.names = FALSE)
+
+  trans <- rep(seq_along(items_int), lengths(items_int)) - as.integer(1)
+
+  tidList <- unname(split(trans, items_int_flat))
+
+  return(tidList)
+
+}
+
 getRecords <- function(itemset, index = NULL) {
   if (is.null(index)) {
     index = 1:length(itemset[[1]])
@@ -122,3 +161,14 @@ getRecords <- function(itemset, index = NULL) {
   tmp$self_sufficient <- as.logical(tmp$self_sufficient)
   return(tmp)
 }
+
+opusHeader <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets",
+                "Version 1.2",
+                "Copyright (C) 2012-2016 Geoffrey I Webb",
+                "This program comes with ABSOLUTELY NO WARRANTY. This is free software,",
+                "and you are welcome to redistribute it under certain conditions.",
+                "See the GNU General Public Licence <http://www.gnu.org/licenses/> for details.",
+                "",
+                "If you publish results obtained by using this software please cite:",
+                "  Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting Associations.",
+                "  ACM Transactions on Knowledge Discovery from Data. 8(3), Art. no. 15.")
