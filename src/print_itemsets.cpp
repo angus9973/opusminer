@@ -62,90 +62,49 @@ Rcpp::GenericVector get_itemsetRec(const itemsetRec &is) {
 }
 
 Rcpp::GenericVector get_itemsets(std::vector<itemsetRec> &is) {
-  // Rcpp::GenericVector output(k);
-  // Rcpp::GenericVector output =
-  //   Rcpp::GenericVector::create(Rcpp::Named("itemset", Rcpp::GenericVector(k)),
-  //                               Rcpp::Named("count", Rcpp::NumericVector(k)),
-  //                               Rcpp::Named("value", Rcpp::NumericVector(k)),
-  //                               Rcpp::Named("p", Rcpp::NumericVector(k)),
-  //                               Rcpp::Named("closure", Rcpp::GenericVector(k)),
-  //                               Rcpp::Named("self_sufficient", Rcpp::LogicalVector(k)));
 
-  Rcpp::GenericVector op_itemset(k);
-  Rcpp::NumericVector op_count(k);
-  Rcpp::NumericVector op_value(k);
-  Rcpp::NumericVector op_p(k);
-  Rcpp::GenericVector op_closure(k);
-  Rcpp::LogicalVector op_self_sufficient(k);
-
-  int index = 0;
+  Rcpp::List output_itemset(k);
+  Rcpp::NumericVector output_count(k);
+  Rcpp::NumericVector output_value(k);
+  Rcpp::NumericVector output_p(k);
+  Rcpp::GenericVector output_closure(k);
+  Rcpp::LogicalVector output_self_sufficient(k);
 
   std::sort(is.begin(), is.end(), valgt);
 
   std::vector<itemsetRec>::const_iterator it;
 
+  int index = 0;
   int failed_count = 0;
 
   for (it = is.begin(); it != is.end(); it++) {
-    if (!it->self_sufficient) {
-      failed_count++;
-    }
-    else {
-      // print_itemsetRec(f, *it);
-      // Rcpp::IntegerVector record = Rcpp::wrap(*it);  //it->value;//get_itemsetRec(*it);
-      // Rcpp::GenericVector record = get_itemsetRec(*it);//Rcpp::wrap(*it);
-      // record("self_sufficient") = "YES";
-      // output[index] = record;
-      ; //[index] = Rcpp::wrap(*it);
-      // output(0, index) = Rcpp::wrap(*it);
-      // output(1, index) = it->count;
-      // output(2, index) = it->value;
-      // output(3, index) = it->p;
-      // output(4, index) = 123;
-      // output(5, index) = true;
-      op_itemset[index] = Rcpp::wrap(*it);
-      op_count[index] = it->count;
-      op_value[index] = it->value;
-      op_p[index] = it->p;
-      op_closure[index] = 123;
-      op_self_sufficient[index] = true;
-      index++;
-    }
-  }
+    output_itemset[index] = Rcpp::wrap(*it);
+    output_count[index] = it->count;
+    output_value[index] = it->value;
+    output_p[index] = it->p;
 
-  if (failed_count) {
-    // fprintf(f, "\n%d itemsets failed test for self sufficiency\n", failed_count);
-    for (it = is.begin(); it != is.end(); it++) {
-      if (!it->self_sufficient) {
-        // print_itemsetRec(f, *it);
-        // Rcpp::IntegerVector record = Rcpp::wrap(*it);//get_itemsetRec(*it);
-        // Rcpp::GenericVector record = get_itemsetRec(*it);
-        // record("self_sufficient") = "NO";
-        // output[index] = record;
-        // output(0, index) = Rcpp::wrap(*it);
-        // output(1, index) = it->count;
-        // output(2, index) = it->value;
-        // output(3, index) = it->p;
-        // output(4, index) = 123;
-        // output(5, index) = false;
-        op_itemset[index] = Rcpp::wrap(*it);
-        op_count[index] = it->count;
-        op_value[index] = it->value;
-        op_p[index] = it->p;
-        op_closure[index] = 123;
-        op_self_sufficient[index] = false;
-        index++;
+    if (printClosures) {
+      itemset closure;
+
+      find_closure(*it, closure);
+
+      if (closure.size() > (*it).size()) {
+        output_closure[index] = Rcpp::wrap(closure);
       }
     }
+
+    output_self_sufficient[index] = it->self_sufficient;
+
+    index++;
   }
 
-  Rcpp::GenericVector output =
-      Rcpp::GenericVector::create(Rcpp::Named("itemset", op_itemset),
-                                  Rcpp::Named("count", op_count),
-                                  Rcpp::Named("value", op_value),
-                                  Rcpp::Named("p", op_p),
-                                  Rcpp::Named("closure", op_closure),
-                                  Rcpp::Named("self_sufficient", op_self_sufficient));
+  Rcpp::List output =
+      Rcpp::List::create(Rcpp::Named("itemset") = output_itemset,
+                         Rcpp::Named("count") = output_count,
+                         Rcpp::Named("value") = output_value,
+                         Rcpp::Named("p") = output_p,
+                         Rcpp::Named("closure") = output_closure,
+                         Rcpp::Named("self_sufficient") = output_self_sufficient);
 
   return output;
 }

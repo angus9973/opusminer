@@ -13,16 +13,17 @@ opusHeader <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Suffic
 opusR_ <- function(f = NULL,         # file
                    d = NULL,         # data
                    k = 100,          # k
-                   p = c(pc = FALSE, # printClosures
-                         fi = TRUE,  # filterItemsets
-                         sl = FALSE, # searchByLift
-                         cf = TRUE,  # correctForMultCompare
-                         rd = TRUE)  # redundancyTests
-                   ) {
+                   pc = FALSE, # printClosures
+                   fi = TRUE,  # filterItemsets
+                   sl = FALSE, # searchByLift
+                   cf = TRUE,  # correctForMultCompare
+                   rd = TRUE)  # redundancyTests
+  {
 
   cat("HEADER", "\n\n")
 
   k <- ifelse(k < 1, 1, k)
+  p <- c(pc, fi, sl, cf, rd)
 
   # check
 
@@ -106,13 +107,19 @@ opusR_ <- function(f = NULL,         # file
       # output <- lapply(output, function(i){i + 1}) # index from 1 (cf 0)
       # output <- lapply(output, function(v){index[v]}) # "decode"
 
-      # or "output$itemset"
-      output[[1]] <- lapply(output[[1]], function(i){i + 1}) # index from 1 (cf 0)
-      output[[1]] <- lapply(output[[1]], function(v){index[v]}) # "decode"
+      # repeat for each of itemset and closure,
+      # to avoid a separate function + copy
 
-        # list(,)
+      # or "output$itemset" / output[[]]
+      output$itemset <- lapply(output$itemset, function(i){i + 1}) # index from 1 (cf 0)
+      output$itemset <- lapply(output$itemset, function(v){index[v]}) # "decode"
 
-      # need to get other components of output as well
+      if (pc == FALSE) {
+        output$closure <- NULL
+      } else {
+        output$closure <- lapply(output$closure, function(i){i + 1}) # index from 1 (cf 0)
+        output$closure <- lapply(output$closure, function(v){index[v]}) # "decode"
+      }
 
       # or above two together:
       # output <- lapply(output, function(v){index[v + 1]}) # "decode"

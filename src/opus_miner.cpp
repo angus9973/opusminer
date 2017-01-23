@@ -67,7 +67,7 @@ opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVe
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
   #endif
 
-  // init();
+  init();
   tids = Rcpp::as< std::vector< tidset > >(tidList);
   noOfItems = numItems;
   noOfTransactions = numTrans;
@@ -75,6 +75,7 @@ opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVe
   std::vector<itemsetRec> is;
 
   Rcpp::GenericVector output;
+  // Rcpp::DataFrame output;
 
   #ifdef _WIN32
     time_t start_t = time(NULL);
@@ -154,6 +155,7 @@ opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVe
 
     // ***** need to move index decoding to R *****
     output = get_itemsets(is);
+    // output = is;
 
     // std::sort(is.begin(), is.end(), valgt);
     // output = Rcpp::wrap(is);
