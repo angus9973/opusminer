@@ -16,9 +16,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// opusHelper
-Rcpp::GenericVector opusHelper(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args);
-RcppExport SEXP opusminer_opusHelper(SEXP tidListSEXP, SEXP numItemsSEXP, SEXP numTransSEXP, SEXP k_SEXP, SEXP argsSEXP) {
+// opus_cpp
+Rcpp::GenericVector opus_cpp(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args);
+RcppExport SEXP opusminer_opus_cpp(SEXP tidListSEXP, SEXP numItemsSEXP, SEXP numTransSEXP, SEXP k_SEXP, SEXP argsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +27,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type numTrans(numTransSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type k_(k_SEXP);
     Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type args(argsSEXP);
-    rcpp_result_gen = Rcpp::wrap(opusHelper(tidList, numItems, numTrans, k_, args));
+    rcpp_result_gen = Rcpp::wrap(opus_cpp(tidList, numItems, numTrans, k_, args));
     return rcpp_result_gen;
 END_RCPP
 }

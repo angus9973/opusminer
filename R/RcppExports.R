@@ -5,7 +5,7 @@ get_tids <- function() {
     .Call('opusminer_get_tids', PACKAGE = 'opusminer')
 }
 
-.opusHelper <- function(tidList, numItems, numTrans, k_, args) {
-    .Call('opusminer_opusHelper', PACKAGE = 'opusminer', tidList, numItems, numTrans, k_, args)
+.opus_cpp <- function(tidList, numItems, numTrans, k_, args) {
+    .Call('opusminer_opus_cpp', PACKAGE = 'opusminer', tidList, numItems, numTrans, k_, args)
 }
 
