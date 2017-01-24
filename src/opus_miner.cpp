@@ -62,7 +62,7 @@ Rcpp::GenericVector
 #ifdef _WIN32
   __cdecl // Leading double underscore required for GCC compiler
 #endif
-opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
+opus(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
   #ifdef _DEBUG
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
   #endif
@@ -203,7 +203,7 @@ opusCPP(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVe
   return output;
 }
 
-// [[Rcpp::export(.opusHelper)]]
-Rcpp::GenericVector opusHelper(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
-  return opusCPP(tidList, numItems, numTrans, k_, args);
+// [[Rcpp::export(.opus_cpp)]]
+Rcpp::GenericVector opus_cpp(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
+  return opus(tidList, numItems, numTrans, k_, args);
 }
