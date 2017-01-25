@@ -1,30 +1,37 @@
-# opusR(...)
-# To consider:
-#   - convert itemlist -> tidlist
-#   - what about null items? (impossible if indexed properly... contiguous)
-#   - ...
-#   - clean up + rearrange code, remove duplication, for file vs data input
-
-# any input format:
-# (1) file input
-# (2) object (already in environment) input
-
 # ==============================================================================
 # TO DO:
 #   - check arguments being passed, avoid copying etc. (esp. large objects)
+#   - piping?
+#   - null items?
+#   - input format
 # ..............................................................................
 
 # ==============================================================================
 # EXTERNAL
 # ..............................................................................
 
+# as.tidset <- function(itemlist){}
+
+as.data.frame.itemset <- function(itemset) {
+  tmp <- as.data.frame(sapply(itemset, "["))
+  tmp$itemset <- sapply(tmp$itemset, paste, collapse = ", ")
+  tmp$count <- as.integer(tmp$count)
+  tmp$value <- as.numeric(tmp$value)
+  tmp$p <- as.numeric(tmp$p)
+  tmp$self_sufficient <- as.logical(tmp$self_sufficient)
+  if ("closure" %in% names(tmp)) {
+    tmp$closure <- sapply(tmp$closure, paste, collapse = ", ")
+  }
+  return(tmp)
+}
+
+# todo:
+#   - move console messages here? or to .[function]?
 decode <- function(itemset, index) {
   return(lapply(itemset, function(v){index[v + 1]}))
 }
 
-# as(tidlist, ...)
-# check:
-#   - that this does not COPY itemlist to .encode or tidlist back to encode
+# -> as(tidlist, ...)
 encode <- function(itemlist) {
   return(.encode(itemlist)[1:2])
 }
@@ -36,53 +43,74 @@ opus <- function(filename = NULL,
                  ...) {
 
   output <- NULL
+  # class(output) <- ...
 
   k <- ifelse(k < 1, 1, k)
   cpp_arguments <- .arguments(list(...))
 
-  tm <- rep(0, 5)
+  proc_time <- rep(0, 5)
 
-  if (!is.null(filename)) {
+  if (!is.null(filename) | !is.null(itemlist)) {
     try({
 
-      cat("Reading file...")
+      proc_time[1] <- proc.time()[3]
 
-      tm[1] <- proc.time()[3]
+      if (!is.null(filename)) {
+        cat("Reading file...")
+        tmp <- .encode(read.itemlist(filename))
+      } else {
+        cat("Reading data...")
+        tmp <- .encode(itemlist)
+      }
 
-      tmp <- .encode(read.itemlist(filename))
+      proc_time[2] <- proc.time()[3]
 
-      tm[2] <- proc.time()[3]
+      cat(" (", round(proc_time[2] - proc_time[1], 2), " seconds)\n\n", sep = "")
 
-      cat(" (", round(tm[2] - tm[1], 2), " seconds)\n\n", sep = "")
-
-      output <- .opus_cpp(tmp$tidlistx,
+      output <- .opus_cpp(tmp$tidlist,
                           tmp$num_items,
                           tmp$num_trans,
                           k,
                           cpp_arguments)
 
-      tm[3] <- proc.time()[3]
+      proc_time[3] <- proc.time()[3]
 
       cat("Decoding...")
 
       output$itemset <- decode(output$itemset, tmp$index)
 
+      # or if(cpp_arguments$print_closures == TRUE)...?
       if (!is.null(output$closure[[1]])) {
         output$closure <- decode(output$closure, tmp$index)
       } else {
         output$closure <- NULL
       }
 
-      tm[4] <- proc.time()[3]
+      proc_time[4] <- proc.time()[3]
 
-      cat(" (", round(tm[4] - tm[3], 2), " seconds)\n\n", sep = "")
+      cat(" (", round(proc_time[4] - proc_time[3], 2), " seconds)\n\n", sep = "")
 
-      cat("[Total = ", round(tm[4] - tm[1], 2), " seconds.]\n", sep = "")
+      cat("[Total = ", round(proc_time[4] - proc_time[1], 2), " seconds.]\n", sep = "")
     })
-  } else if (!is.null(itemlist)) {
-    #
   } else if (!is.null(tidlist)) {
-    #
+
+    proc_time[1] <- proc.time()[3]
+
+    output <- .opus_cpp(tidlist,
+                        length(tidlist),
+                        max(unlist(tidlist, FALSE, FALSE)),
+                        k,
+                        cpp_arguments)
+
+    # or if(cpp_arguments$print_closures == FALSE)...?
+    if (is.null(output$closure[[1]])) {
+      output$closure <- NULL
+    }
+
+    proc_time[2] <- proc.time()[3]
+
+    cat("[Total = ", round(proc_time[2] - proc_time[1], 2), " seconds.]\n", sep = "")
+
   } else {
     stop("ERROR")
   }
@@ -162,7 +190,7 @@ read.itemlist <- function(filename, sep = " ") {
       )
     )
 
-  return(list(tidlistx = tidlist,
+  return(list(tidlist = tidlist,
               index = index,
               num_items = length(index),
               num_trans = length(itemlist)))
