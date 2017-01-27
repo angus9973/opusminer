@@ -4,6 +4,15 @@
 #   - piping?
 #   - null items?
 #   - input format
+#   - ...
+#   - fast file -> list -> arules format
+#   - arules format -> CPP -> output
+#   - output -> arules format?
+#   - ? arules removes duplicate ITEMS... just says which transactions an item
+#     is in, not how many of that item are in a transaction
+#     >>> check behaviour of opusMiner
+#     >>> may present issue in terms of use of arules structures... (may not
+#         make any difference)
 # ..............................................................................
 
 # ==============================================================================
@@ -23,6 +32,43 @@ as.data.frame.itemset <- function(itemset) {
     tmp$closure <- sapply(tmp$closure, paste, collapse = ", ")
   }
   return(tmp)
+}
+
+# a <- list(c("one", "two", "three"), c("four", "one", "two"), c("five", "five", "three", "four", "six"))
+
+# chr to sparse (cf. int to sparse)
+# trying to emulate arules version
+as.sparseMatrix <- function(itemlist) {
+  # # "row_index" <-> "col_index" ?
+  # tmp <- .encode_partial(itemlist)
+  # # row_index <- rep(seq_along(tmp$itemlist_indexed),
+  # #                  lengths(tmp$itemlist_indexed))
+  #
+  # # best to do unique(...) here as input is unlist()-ed: no need for _apply(...)
+  # row_index <- unique(unlist(tmp$itemlist_indexed, FALSE, FALSE))
+  # col_index <- seq_along(tmp$itemlist_indexed)
+  # return(sparseMatrix(j = row_index,
+  #                     i = col_index))
+  index <- unique(unlist(itemlist))
+
+  sm_col_index <- rep(seq_along(itemlist),
+                      lengths(itemlist))
+  sm_row_index <- match(unlist(itemlist),
+                        index)
+  # return(sparseMatrix(i = sm_row_index,
+  #                     j = sm_col_index,
+  #                     dimnames = list(index, NULL)))
+  return(sparseMatrix(i = sm_row_index,
+                      j = sm_col_index))
+}
+
+as.transactions <- function(itemlist) {
+  return(
+    new("transactions",
+        data = as.sparseMatrix(itemlist),
+        itemInfo = data.frame(labels = unique(unlist(itemlist)),
+                              stringsAsFactors = FALSE))
+  )
 }
 
 # todo:
@@ -135,6 +181,13 @@ read.itemlist <- function(filename, sep = " ") {
 
 # read.TIDList <- function(filename) {}
 
+# setAs("opuslist",
+#       "itemMatrix",
+#       function(opuslist) {
+#
+#       }
+#       )
+
 # ==============================================================================
 # INTERNAL
 # ..............................................................................
@@ -194,6 +247,26 @@ read.itemlist <- function(filename, sep = " ") {
               index = index,
               num_items = length(index),
               num_trans = length(itemlist)))
+}
+
+.encode_partial <- function(itemlist) {
+  index <- unique(unlist(itemlist, FALSE, FALSE))
+
+  # try:
+  #   - swap "unname(...)" for "use.names = FALSE" in "unlist(...)"
+  item_index_numbers <-
+    unname(
+      split(
+        match(unlist(itemlist), index),
+        rep(
+          seq_along(itemlist),
+          lengths(itemlist)
+        )
+      )
+    )
+
+  return(list(itemlist_indexed = item_index_numbers,
+              index = index))
 }
 
 # .opus <- function(){}
