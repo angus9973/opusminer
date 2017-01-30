@@ -13,6 +13,8 @@
 #     >>> check behaviour of opusMiner
 #     >>> may present issue in terms of use of arules structures... (may not
 #         make any difference)
+#   - ...
+#   - move console output to component functions
 # ..............................................................................
 
 # ==============================================================================
@@ -21,7 +23,7 @@
 
 # as.tidset <- function(itemlist){}
 
-as.data.frame.itemset <- function(itemset) {
+as_df <- function(itemset) {
   tmp <- as.data.frame(sapply(itemset, "["))
   tmp$itemset <- sapply(tmp$itemset, paste, collapse = ", ")
   tmp$count <- as.integer(tmp$count)
@@ -34,45 +36,44 @@ as.data.frame.itemset <- function(itemset) {
   return(tmp)
 }
 
-# a <- list(c("one", "two", "three"), c("four", "one", "two"), c("five", "five", "three", "four", "six"))
-
 # chr to sparse (cf. int to sparse)
 # trying to emulate arules version
-as.sparseMatrix <- function(itemlist) {
-  # # "row_index" <-> "col_index" ?
-  # tmp <- .encode_partial(itemlist)
-  # # row_index <- rep(seq_along(tmp$itemlist_indexed),
-  # #                  lengths(tmp$itemlist_indexed))
-  #
-  # # best to do unique(...) here as input is unlist()-ed: no need for _apply(...)
-  # row_index <- unique(unlist(tmp$itemlist_indexed, FALSE, FALSE))
-  # col_index <- seq_along(tmp$itemlist_indexed)
-  # return(sparseMatrix(j = row_index,
-  #                     i = col_index))
+as_sparse_matrix <- function(itemlist) {
+
   index <- unique(unlist(itemlist))
+
+  sm_row_index <- match(unlist(itemlist),
+                        index)
 
   sm_col_index <- rep(seq_along(itemlist),
                       lengths(itemlist))
-  sm_row_index <- match(unlist(itemlist),
-                        index)
-  # return(sparseMatrix(i = sm_row_index,
-  #                     j = sm_col_index,
-  #                     dimnames = list(index, NULL)))
+
   return(sparseMatrix(i = sm_row_index,
                       j = sm_col_index))
+
 }
 
-as.transactions <- function(itemlist) {
+# arules
+as_itemsets <- function(output) {
+  return(
+    new("itemsets",
+        items = as(as_transactions(output$itemset), "itemMatrix"),
+        quality = as_df(output)[ , c("count",
+                                     "value",
+                                     "p",
+                                     "self_sufficient")])
+  )
+}
+
+as_transactions <- function(itemlist) {
   return(
     new("transactions",
-        data = as.sparseMatrix(itemlist),
+        data = as_sparse_matrix(itemlist),
         itemInfo = data.frame(labels = unique(unlist(itemlist)),
                               stringsAsFactors = FALSE))
   )
 }
 
-# todo:
-#   - move console messages here? or to .[function]?
 decode <- function(itemset, index) {
   return(lapply(itemset, function(v){index[v + 1]}))
 }
@@ -82,6 +83,9 @@ encode <- function(itemlist) {
   return(.encode(itemlist)[1:2])
 }
 
+
+# to do:
+#   - arules input -> as([from: arules], [to] "list")
 opus <- function(filename = NULL,
                  itemlist = NULL,
                  tidlist = NULL,
@@ -94,53 +98,57 @@ opus <- function(filename = NULL,
   k <- ifelse(k < 1, 1, k)
   cpp_arguments <- .arguments(list(...))
 
-  proc_time <- rep(0, 5)
+  time <- rep(0, 4)
 
   if (!is.null(filename) | !is.null(itemlist)) {
     try({
 
-      proc_time[1] <- proc.time()[3]
+      time[1] <- proc.time()[3] # reading file/data start
 
       if (!is.null(filename)) {
+
         cat("Reading file...")
-        tmp <- .encode(read.itemlist(filename))
+        input <- .encode(read.itemlist(filename))
+
       } else {
+
         cat("Reading data...")
-        tmp <- .encode(itemlist)
+        input <- .encode(itemlist)
+
       }
 
-      proc_time[2] <- proc.time()[3]
+      time[2] <- proc.time()[3] # reading file/data end
 
-      cat(" (", round(proc_time[2] - proc_time[1], 2), " seconds)\n\n", sep = "")
+      cat(" (", round(time[2] - time[1], 2), " seconds)\n\n", sep = "")
 
-      output <- .opus_cpp(tmp$tidlist,
-                          tmp$num_items,
-                          tmp$num_trans,
+      output <- .opus_cpp(input$tidlist,
+                          input$num_items,
+                          input$num_trans,
                           k,
                           cpp_arguments)
 
-      proc_time[3] <- proc.time()[3]
+      time[3] <- proc.time()[3] # decoding output start
 
-      cat("Decoding...")
+      cat("Decoding output...")
 
-      output$itemset <- decode(output$itemset, tmp$index)
+      output$itemset <- decode(output$itemset, input$index)
 
       # or if(cpp_arguments$print_closures == TRUE)...?
       if (!is.null(output$closure[[1]])) {
-        output$closure <- decode(output$closure, tmp$index)
+        output$closure <- decode(output$closure, input$index)
       } else {
         output$closure <- NULL
       }
 
-      proc_time[4] <- proc.time()[3]
+      time[4] <- proc.time()[3] # decoding output end
 
-      cat(" (", round(proc_time[4] - proc_time[3], 2), " seconds)\n\n", sep = "")
+      cat(" (", round(time[4] - time[3], 2), " seconds)\n\n", sep = "")
 
-      cat("[Total = ", round(proc_time[4] - proc_time[1], 2), " seconds.]\n", sep = "")
+      cat("{Total time ", round(time[4] - time[1], 2), " seconds}\n\n", sep = "")
     })
   } else if (!is.null(tidlist)) {
 
-    proc_time[1] <- proc.time()[3]
+    time[1] <- proc.time()[3]
 
     output <- .opus_cpp(tidlist,
                         length(tidlist),
@@ -153,9 +161,9 @@ opus <- function(filename = NULL,
       output$closure <- NULL
     }
 
-    proc_time[2] <- proc.time()[3]
+    time[2] <- proc.time()[3]
 
-    cat("[Total = ", round(proc_time[2] - proc_time[1], 2), " seconds.]\n", sep = "")
+    cat("[Total = ", round(time[2] - time[1], 2), " seconds.]\n", sep = "")
 
   } else {
     stop("ERROR")
@@ -213,10 +221,9 @@ read.itemlist <- function(filename, sep = " ") {
 }
 
 .encode <- function(itemlist) {
+
   index <- unique(unlist(itemlist, FALSE, FALSE))
 
-  # try:
-  #   - swap "unname(...)" for "use.names = FALSE" in "unlist(...)"
   item_index_numbers <-
     unname(
       split(
