@@ -89,6 +89,7 @@ encode <- function(itemlist) {
 opus <- function(filename = NULL,
                  itemlist = NULL,
                  tidlist = NULL,
+                 arules_transactions = NULL,
                  k = 100,
                  ...) {
 
@@ -100,7 +101,7 @@ opus <- function(filename = NULL,
 
   time <- rep(0, 4)
 
-  if (!is.null(filename) | !is.null(itemlist)) {
+  if (!is.null(filename) | !is.null(itemlist) | !is.null(arules_transactions)) {
     try({
 
       time[1] <- proc.time()[3] # reading file/data start
@@ -110,10 +111,15 @@ opus <- function(filename = NULL,
         cat("Reading file...")
         input <- .encode(read.itemlist(filename))
 
-      } else {
+      } else if (!is.null(itemlist)) {
 
         cat("Reading data...")
         input <- .encode(itemlist)
+
+      } else {
+
+        cat("Reading data...")
+        input <- .encode(as(arules_transactions, "list"))
 
       }
 
