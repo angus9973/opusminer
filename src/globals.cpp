@@ -50,10 +50,3 @@ void expandAlpha(const unsigned int depth) {
     }
   }
 }
-
-// [[Rcpp::export]]
-Rcpp::XPtr< std::vector<tidset> > get_tids() {
-  // std::vector<int> xxx = new std::vector<int>;
-  Rcpp::XPtr< std::vector<tidset> > pointer(&tids) ;
-  return (pointer);
-}
