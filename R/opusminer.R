@@ -1,20 +1,12 @@
 # ==============================================================================
 # TO DO:
-#   - check arguments being passed, avoid copying etc. (esp. large objects)
-#   - piping?
-#   - null items?
-#   - input format
-#   - ...
-#   - fast file -> list -> arules format
-#   - arules format -> CPP -> output
-#   - output -> arules format?
-#   - ? arules removes duplicate ITEMS... just says which transactions an item
-#     is in, not how many of that item are in a transaction
-#     >>> check behaviour of opusMiner
-#     >>> may present issue in terms of use of arules structures... (may not
-#         make any difference)
-#   - ...
-#   - move console output to component functions
+#   - test:
+#     - null items
+#     - duplicate items
+#   - package issues:
+#     - comments:
+#       - R
+#       - C++
 # ..............................................................................
 
 # ==============================================================================
@@ -22,7 +14,7 @@
 # ..............................................................................
 
 # ...
-# file-reading options?
+# file-reading parameters?
 opus <- function(filename = NULL,
                  transactions = NULL,
                  format = "dataframe",
