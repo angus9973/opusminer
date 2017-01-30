@@ -21,24 +21,114 @@
 # EXTERNAL
 # ..............................................................................
 
-# as.tidset <- function(itemlist){}
+# ...
+# file-reading options?
+opus <- function(filename = NULL,
+                 transactions = NULL,
+                 format = "dataframe",
+                 k = 100,
+                 ...) {
 
-as_df <- function(itemset) {
-  tmp <- as.data.frame(sapply(itemset, "["))
-  tmp$itemset <- sapply(tmp$itemset, paste, collapse = ", ")
-  tmp$count <- as.integer(tmp$count)
-  tmp$value <- as.numeric(tmp$value)
-  tmp$p <- as.numeric(tmp$p)
-  tmp$self_sufficient <- as.logical(tmp$self_sufficient)
-  if ("closure" %in% names(tmp)) {
-    tmp$closure <- sapply(tmp$closure, paste, collapse = ", ")
+  # initialise output
+  output <- NULL
+
+  # check arguments
+  if (k < 1) {k <- 1}
+  cpp_arguments <- .check_arguments(list(...))
+
+  # initialise timing
+  time <- rep(0, 4)
+
+  if (!is.null(filename) | !is.null(transactions)) {
+    try({
+
+      time[1] <- proc.time()[3]
+
+      if (!is.null(filename)) {
+        cat("Reading file...")
+        input <- .encode(.read_transactions(filename))
+      } else if (!is.null(transactions)) {
+        cat("Reading data...")
+        if (is(transactions, "transactions")) {
+          transactions <- as(transactions, "list")
+        }
+        input <- .encode(transactions)
+      }
+
+      time[2] <- proc.time()[3]
+      cat(" (", round(time[2] - time[1], 2), " seconds)\n\n", sep = "")
+
+      output <- .opus_cpp(input$tidlist,
+                          input$num_items,
+                          input$num_trans,
+                          k,
+                          cpp_arguments)
+
+      time[3] <- proc.time()[3]
+      cat("Decoding output...")
+
+      output$itemset <- .decode(output$itemset, input$index)
+
+      if (cpp_arguments["print_closures"] == TRUE) {
+        output$closure <- .decode(output$closure, input$index)
+      } else {
+        output$closure <- NULL
+      }
+
+      time[4] <- proc.time()[3]
+      cat(" (", round(time[4] - time[3], 2), " seconds)\n\n", sep = "")
+      cat("[[Total: ", round(time[4] - time[1], 2), " seconds]]\n\n", sep = "")
+
+    }) # try({...
+  } else {
+    stop("No input.")
   }
-  return(tmp)
+
+  if (format == "dataframe") {
+    output <- .as_data_frame(output)
+  } else if (format == "itemsets") {
+    output <- .as_itemsets(output)
+  }
+
+  return(output)
 }
 
-# chr to sparse (cf. int to sparse)
-# trying to emulate arules version
-as_sparse_matrix <- function(itemlist) {
+# ==============================================================================
+# INTERNAL
+# ..............................................................................
+
+.as_data_frame <- function(output) {
+
+  output <- as.data.frame(sapply(output, "["))
+
+  output$itemset <- sapply(output$itemset, paste, collapse = ", ")
+  output$count <- as.integer(output$count)
+  output$value <- as.numeric(output$value)
+  output$p <- as.numeric(output$p)
+  output$self_sufficient <- as.logical(output$self_sufficient)
+
+  if ("closure" %in% names(output)) {
+    output$closure <- sapply(output$closure, paste, collapse = ", ")
+  }
+
+  return(output)
+
+}
+
+# to do:
+#   - add *closure* to quality$...
+.as_itemsets <- function(output) {
+  return(
+    new("itemsets",
+        items = as(.as_transactions(output$itemset), "itemMatrix"),
+        quality = .as_data_frame(output)[ , c("count",
+                                              "value",
+                                              "p",
+                                              "self_sufficient")])
+  )
+}
+
+.as_sparse_matrix <- function(itemlist) {
 
   index <- unique(unlist(itemlist))
 
@@ -48,182 +138,43 @@ as_sparse_matrix <- function(itemlist) {
   sm_col_index <- rep(seq_along(itemlist),
                       lengths(itemlist))
 
+  # depends: Matrix
   return(sparseMatrix(i = sm_row_index,
                       j = sm_col_index))
 
 }
 
-# arules
-as_itemsets <- function(output) {
-  return(
-    new("itemsets",
-        items = as(as_transactions(output$itemset), "itemMatrix"),
-        quality = as_df(output)[ , c("count",
-                                     "value",
-                                     "p",
-                                     "self_sufficient")])
-  )
-}
-
-as_transactions <- function(itemlist) {
+.as_transactions <- function(itemlist) {
   return(
     new("transactions",
-        data = as_sparse_matrix(itemlist),
+        data = .as_sparse_matrix(itemlist),
         itemInfo = data.frame(labels = unique(unlist(itemlist)),
                               stringsAsFactors = FALSE))
   )
 }
 
-decode <- function(itemset, index) {
-  return(lapply(itemset, function(v){index[v + 1]}))
-}
+.check_arguments <- function(arg) {
 
-# -> as(tidlist, ...)
-encode <- function(itemlist) {
-  return(.encode(itemlist)[1:2])
-}
+  def <- list(print_closures = FALSE,
+              filter_itemsets = TRUE,
+              search_by_lift = FALSE,
+              correct_for_mult_compare = TRUE,
+              redundancy_tests = TRUE)
 
-
-# to do:
-#   - arules input -> as([from: arules], [to] "list")
-opus <- function(filename = NULL,
-                 itemlist = NULL,
-                 tidlist = NULL,
-                 arules_transactions = NULL,
-                 k = 100,
-                 ...) {
-
-  output <- NULL
-  # class(output) <- ...
-
-  k <- ifelse(k < 1, 1, k)
-  cpp_arguments <- .arguments(list(...))
-
-  time <- rep(0, 4)
-
-  if (!is.null(filename) | !is.null(itemlist) | !is.null(arules_transactions)) {
-    try({
-
-      time[1] <- proc.time()[3] # reading file/data start
-
-      if (!is.null(filename)) {
-
-        cat("Reading file...")
-        input <- .encode(read.itemlist(filename))
-
-      } else if (!is.null(itemlist)) {
-
-        cat("Reading data...")
-        input <- .encode(itemlist)
-
-      } else {
-
-        cat("Reading data...")
-        input <- .encode(as(arules_transactions, "list"))
-
-      }
-
-      time[2] <- proc.time()[3] # reading file/data end
-
-      cat(" (", round(time[2] - time[1], 2), " seconds)\n\n", sep = "")
-
-      output <- .opus_cpp(input$tidlist,
-                          input$num_items,
-                          input$num_trans,
-                          k,
-                          cpp_arguments)
-
-      time[3] <- proc.time()[3] # decoding output start
-
-      cat("Decoding output...")
-
-      output$itemset <- decode(output$itemset, input$index)
-
-      # or if(cpp_arguments$print_closures == TRUE)...?
-      if (!is.null(output$closure[[1]])) {
-        output$closure <- decode(output$closure, input$index)
-      } else {
-        output$closure <- NULL
-      }
-
-      time[4] <- proc.time()[3] # decoding output end
-
-      cat(" (", round(time[4] - time[3], 2), " seconds)\n\n", sep = "")
-
-      cat("{Total time ", round(time[4] - time[1], 2), " seconds}\n\n", sep = "")
-    })
-  } else if (!is.null(tidlist)) {
-
-    time[1] <- proc.time()[3]
-
-    output <- .opus_cpp(tidlist,
-                        length(tidlist),
-                        max(unlist(tidlist, FALSE, FALSE)),
-                        k,
-                        cpp_arguments)
-
-    # or if(cpp_arguments$print_closures == FALSE)...?
-    if (is.null(output$closure[[1]])) {
-      output$closure <- NULL
-    }
-
-    time[2] <- proc.time()[3]
-
-    cat("[Total = ", round(time[2] - time[1], 2), " seconds.]\n", sep = "")
-
-  } else {
-    stop("ERROR")
-  }
-
-  return(output)
-}
-
-# read.itemlist()
-# add:
-#   - regex
-read.itemlist <- function(filename, sep = " ") {
-  itemlist <- NULL
-  if (is.character(filename) && file.exists(filename)) {
-    try ({
-      raw <- readChar(filename, file.info(filename)$size, TRUE)
-      raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
-      itemlist <- strsplit(raw, split = sep, fixed = TRUE)
-    })
-  }
-  return(itemlist)
-}
-
-# read.TIDList <- function(filename) {}
-
-# setAs("opuslist",
-#       "itemMatrix",
-#       function(opuslist) {
-#
-#       }
-#       )
-
-# ==============================================================================
-# INTERNAL
-# ..............................................................................
-
-.arguments <- function(L) {
-
-  default <- list(print_closures = FALSE,
-                  filter_itemsets = TRUE,
-                  search_by_lift = FALSE,
-                  correct_for_mult_compare = TRUE,
-                  redundancy_tests = TRUE)
-
-  if (length(L) > 0) {
+  if (length(arg) > 0) {
     # "drop" any elements of L not being both of lenght one and boolean
-    L <- L[sapply(L, function(e){length(e) == 1 && is.logical(e)})]
+    arg <- arg[sapply(arg, function(e){length(e) == 1 && is.logical(e)})]
     # replace:
     #   - elements of default with names matching elements of L; with
     #   - elements of L with names matching elements of default.
-    default[names(default) %in% names(L)] <- L[names(L) %in% names(default)]
+    def[names(def) %in% names(arg)] <- arg[names(arg) %in% names(def)]
   }
 
-  return(unlist(default, use.names = FALSE))
+  return(unlist(def))
+}
+
+.decode <- function(itemset, index) {
+  return(lapply(itemset, function(v){index[v + 1]}))
 }
 
 .encode <- function(itemlist) {
@@ -262,193 +213,18 @@ read.itemlist <- function(filename, sep = " ") {
               num_trans = length(itemlist)))
 }
 
-.encode_partial <- function(itemlist) {
-  index <- unique(unlist(itemlist, FALSE, FALSE))
-
-  # try:
-  #   - swap "unname(...)" for "use.names = FALSE" in "unlist(...)"
-  item_index_numbers <-
-    unname(
-      split(
-        match(unlist(itemlist), index),
-        rep(
-          seq_along(itemlist),
-          lengths(itemlist)
-        )
-      )
-    )
-
-  return(list(itemlist_indexed = item_index_numbers,
-              index = index))
-}
-
-# .opus <- function(){}
-
-# .read.itemlist <- function(filename){}
-
-# .read.TIDList <- function(){}
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-opusR <- function(f = NULL,   # file
-                  d = NULL,   # data : list of numeric
-                  k = 100,    # k
-                  pc = FALSE, # printClosures
-                  fi = TRUE,  # filterItemsets
-                  sl = FALSE, # searchByLift
-                  cf = TRUE,  # correctForMultCompare
-                  rd = TRUE)  # redundancyTests
-  {
-
-  cat("HEADER", "\n\n")
-
-  k <- ifelse(k < 1, 1, k)
-  p <- c(pc, fi, sl, cf, rd)
-
-  output <- NULL
-
-  if (is.null(d) & is.null(f)) {
-    message("[provide filename or indexed tidlist]")
-  } else if (is.null(f) & !is.null(d)) {
-    try({
-      output <- .opusHelper(d, length(d), max(unlist(d)), k, p)
-    })
-  } else if (is.character(f) && file.exists(f)) {
-
-    try({
-
-      cat("Reading file...")
-
-      T1 <- proc.time()[3]
-
-      # type = character
-      raw <- readChar(f, file.info(f)$size, TRUE)
-
-      # type = vector of character (1st and only element of list of length 1)
+# add:
+#   - regex
+.read_transactions <- function(filename, sep = " ") {
+  itemlist <- NULL
+  if (is.character(filename) && file.exists(filename)) {
+    try ({
+      raw <- readChar(filename, file.info(filename)$size, TRUE)
       raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
-
-      # *** or strsplit(..., split = "\\s+") ***
-      # type = list of vector of character
-      items <- strsplit(raw, " ", fixed = TRUE)
-
-      noOfTransactions <- length(items)
-
-      # type = vector of character
-      index <- unique(unlist(items, FALSE, FALSE))
-
-      noOfItems <- length(index)
-
-      # replace item name (character) with item index (integer)
-      # faster than "lapply(items, match, index)"
-      # type = list of integer
-      items_int <- unname(
-        split(
-          match(unlist(items), index),
-          rep(
-            seq_along(items),
-            lengths(items)
-          )
-        )
-      )
-
-      # intermediate steps to allow "jagged" transpose
-
-      # type = vector of integer
-      items_int_flat <- unlist(items_int, recursive = FALSE, use.names = FALSE)
-
-      # exchange item index (integer) with transaction number (integer)
-      # subtract 1 to index from 0 (for C++)
-      # flatten
-      # type = vector of integer
-      trans <- rep(seq_along(items_int), lengths(items_int)) - as.integer(1)
-
-      # C <- split(A, B): place each element of A, A[i], at C[[B[i]]]
-      # ie, "swap" the transaction number with the item index
-      # ie, like a "jagged" transpose of the transaction numbers and the item index nubmers
-      # type = list of vector of integer
-      tidList <- unname(split(trans, items_int_flat))
-      # return(tidList)
-
-      T2 <- proc.time()[3]
-
-      cat(" (", round(T2 - T1, 2), " seconds)\n\n", sep = "")
-      # output <- .opusHelper(tidList, noOfItems, noOfTransactions, k, p)
-      output <- .opus_cpp(tidList, noOfItems, noOfTransactions, k, p)
-
-      T3 <- proc.time()[3]
-
-      cat("Total time: ", round(T3 - T1, 2), " seconds.\n", sep = "")
-
-      output$itemset <- lapply(output$itemset, function(v){index[v + 1]}) # "decode"
-
-      if (pc == FALSE) {
-        output$closure <- NULL
-      } else {
-        output$closure <- lapply(output$closure, function(v){index[v + 1]}) # "decode"
-      }
-
-      T4 <- proc.time()[3]
-
-      cat("**Decode time: ", round(T4 - T3, 2), " seconds.**\n")
-
-    }) # try({...
-  } # if (is.character(f) && file.exists(f)) {...
-
-  return(output)
-}
-
-readItemList <- function(f) {
-  items <- NULL
-  if (is.character(f) && file.exists(f)) {
-    try({
-      raw <- readChar(f, file.info(f)$size, TRUE)
-      raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
-      items <- strsplit(raw, " ", fixed = TRUE)
+      itemlist <- strsplit(raw, split = sep, fixed = TRUE)
     })
-  } else {
-    message("ERROR")
   }
-  return(items)
-}
-
-# readTIDSet <- function(){}
-
-itemListToTIDList <- function(items) {
-
-  index <- unique(unlist(items, FALSE, FALSE))
-
-  items_int <- unname(
-    split(
-      match(unlist(items), index),
-      rep(
-        seq_along(items),
-        lengths(items)
-      )
-    )
-  )
-
-  items_int_flat <- unlist(items_int, recursive = FALSE, use.names = FALSE)
-
-  trans <- rep(seq_along(items_int), lengths(items_int)) - as.integer(1)
-
-  tidList <- unname(split(trans, items_int_flat))
-
-  return(tidList)
-
-}
-
-getRecords <- function(itemset, index = NULL) {
-  if (is.null(index)) {
-    index = 1:length(itemset[[1]])
-  }
-  tmp <- as.data.frame(sapply(itemset, "[", index))
-  tmp$count <- as.integer(tmp$count)
-  tmp$value <- as.numeric(tmp$value)
-  tmp$p <- as.numeric(tmp$p)
-  tmp$self_sufficient <- as.logical(tmp$self_sufficient)
-  return(tmp)
+  return(itemlist)
 }
 
 .header <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets",
