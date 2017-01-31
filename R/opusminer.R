@@ -1,5 +1,7 @@
 # ==============================================================================
 # TO DO:
+#   - file-reading:
+#     - regex?
 #   - test:
 #     - null items
 #     - duplicate items
@@ -7,18 +9,28 @@
 #     - comments:
 #       - R
 #       - C++
+#     - arules-based functionality conditional on arules being loaded?
 # ..............................................................................
 
 # ==============================================================================
 # EXTERNAL
 # ..............................................................................
 
+# demo START
+as_transactions <- function(transactions) {
+  return(.as_transactions(transactions))
+}
+
+read_transactions <- function(filename) {
+  return(.read_transactions(filename))
+}
+# demo END
+
 # ...
-# file-reading parameters?
-opus <- function(filename = NULL,
-                 transactions = NULL,
-                 format = "dataframe",
+opus <- function(transactions = NULL,
                  k = 100,
+                 format = "dataframe",
+                 sep = " ",
                  ...) {
 
   # initialise output
@@ -26,60 +38,57 @@ opus <- function(filename = NULL,
 
   # check arguments
   if (k < 1) {k <- 1}
-  cpp_arguments <- .check_arguments(list(...))
+  cpp_arguments <- .check_cpp_arguments(list(...))
 
-  # initialise timing
-  time <- rep(0, 4)
+  if (.valid_input(transactions)) {
 
-  if (!is.null(filename) | !is.null(transactions)) {
-    try({
+    time <- rep(0, 4)
+    time[1] <- proc.time()[3]
 
-      time[1] <- proc.time()[3]
+    cat("Reading file/data...")
 
-      if (!is.null(filename)) {
-        cat("Reading file...")
-        input <- .encode(.read_transactions(filename))
-      } else if (!is.null(transactions)) {
-        cat("Reading data...")
-        if (is(transactions, "transactions")) {
-          transactions <- as(transactions, "list")
-        }
-        input <- .encode(transactions)
-      }
+    if (.valid_filename(transactions)) {
+      input <- .encode(.read_transactions(transactions, sep = sep))
+    } else if (is(transactions, "list")) {
+      input <- .encode(transactions)
+    } else if (is(transactions, "transactions")) {
+      input <- .encode(as(transactions, "list"))
+    }
 
-      time[2] <- proc.time()[3]
-      cat(" (", round(time[2] - time[1], 2), " seconds)\n\n", sep = "")
+    time[2] <- proc.time()[3]
+    cat(" (", round(time[2] - time[1], 2), " seconds)\n\n", sep = "")
 
-      output <- .opus_cpp(input$tidlist,
-                          input$num_items,
-                          input$num_trans,
-                          k,
-                          cpp_arguments)
+    output <- .opus_cpp(input$tidlist,
+                        input$num_items,
+                        input$num_trans,
+                        k,
+                        cpp_arguments)
 
-      time[3] <- proc.time()[3]
-      cat("Decoding output...")
+    time[3] <- proc.time()[3]
+    cat("Decoding output...")
 
-      output$itemset <- .decode(output$itemset, input$index)
+    output$itemset <- .decode(output$itemset, input$index)
 
-      if (cpp_arguments["print_closures"] == TRUE) {
-        output$closure <- .decode(output$closure, input$index)
-      } else {
-        output$closure <- NULL
-      }
+    if (cpp_arguments["print_closures"] == TRUE) {
+      output$closure <- .decode(output$closure, input$index)
+    } else {
+      output$closure <- NULL
+    }
 
-      time[4] <- proc.time()[3]
-      cat(" (", round(time[4] - time[3], 2), " seconds)\n\n", sep = "")
-      cat("[[Total: ", round(time[4] - time[1], 2), " seconds]]\n\n", sep = "")
+    time[4] <- proc.time()[3]
+    cat(" (", round(time[4] - time[3], 2), " seconds)\n\n", sep = "")
+    cat("[[Total: ", round(time[4] - time[1], 2), " seconds]]\n\n", sep = "")
 
-    }) # try({...
+    if (format == "dataframe") {
+      output <- .as_data_frame(output)
+    } else if (format == "itemsets") {
+      output <- .as_itemsets(output)
+    }
+
+  } else if (!is.null(transactions)) {
+    message("invalid filename or transaction data")
   } else {
-    stop("No input.")
-  }
-
-  if (format == "dataframe") {
-    output <- .as_data_frame(output)
-  } else if (format == "itemsets") {
-    output <- .as_itemsets(output)
+    message("no filename or transaction data specified")
   }
 
   return(output)
@@ -91,6 +100,7 @@ opus <- function(filename = NULL,
 
 .as_data_frame <- function(output) {
 
+  # "transpose" list elements to columns of a data frame
   output <- as.data.frame(sapply(output, "["))
 
   output$itemset <- sapply(output$itemset, paste, collapse = ", ")
@@ -104,48 +114,37 @@ opus <- function(filename = NULL,
   }
 
   return(output)
-
 }
 
-# to do:
-#   - add *closure* to quality$...
+# return list output as an arules itemsets object
 .as_itemsets <- function(output) {
   return(
     new("itemsets",
         items = as(.as_transactions(output$itemset), "itemMatrix"),
-        quality = .as_data_frame(output)[ , c("count",
-                                              "value",
-                                              "p",
-                                              "self_sufficient")])
+        quality = .as_data_frame(output)[-1])
   )
 }
 
-.as_sparse_matrix <- function(itemlist) {
-
-  index <- unique(unlist(itemlist))
-
-  sm_row_index <- match(unlist(itemlist),
-                        index)
-
-  sm_col_index <- rep(seq_along(itemlist),
-                      lengths(itemlist))
-
-  # depends: Matrix
-  return(sparseMatrix(i = sm_row_index,
-                      j = sm_col_index))
-
+# return a list of transactions as a sparse matrix (ngCMatrix)
+.as_sparse_matrix <- function(transactions) {
+  index <- unique(unlist(transactions))
+  sm_row_index <- match(unlist(transactions), index)
+  sm_col_index <- rep(seq_along(transactions), lengths(transactions))
+  return(sparseMatrix(i = sm_row_index, j = sm_col_index))
 }
 
-.as_transactions <- function(itemlist) {
+# return a list of transactions as an arules transactions object
+.as_transactions <- function(transactions) {
   return(
     new("transactions",
-        data = .as_sparse_matrix(itemlist),
-        itemInfo = data.frame(labels = unique(unlist(itemlist)),
+        data = .as_sparse_matrix(transactions),
+        itemInfo = data.frame(labels = unique(unlist(transactions)),
                               stringsAsFactors = FALSE))
   )
 }
 
-.check_arguments <- function(arg) {
+# validate cpp arguments
+.check_cpp_arguments <- function(arg) {
 
   def <- list(print_closures = FALSE,
               filter_itemsets = TRUE,
@@ -154,21 +153,23 @@ opus <- function(filename = NULL,
               redundancy_tests = TRUE)
 
   if (length(arg) > 0) {
-    # "drop" any elements of L not being both of lenght one and boolean
+    # "drop" any elements of arg not being both of length 1 and boolean
     arg <- arg[sapply(arg, function(e){length(e) == 1 && is.logical(e)})]
     # replace:
-    #   - elements of default with names matching elements of L; with
-    #   - elements of L with names matching elements of default.
+    #   - elements of def with names matching elements of arg; with
+    #   - elements of arg with names matching elements of def.
     def[names(def) %in% names(arg)] <- arg[names(arg) %in% names(def)]
   }
 
   return(unlist(def))
 }
 
+# return the item labels given an itemset (of item index numbers) and an index
 .decode <- function(itemset, index) {
   return(lapply(itemset, function(v){index[v + 1]}))
 }
 
+# return a tidlist, index, number of items and number of transactions
 .encode <- function(itemlist) {
 
   index <- unique(unlist(itemlist, FALSE, FALSE))
@@ -205,18 +206,30 @@ opus <- function(filename = NULL,
               num_trans = length(itemlist)))
 }
 
-# add:
-#   - regex
+# read transactions from a file (fast)
 .read_transactions <- function(filename, sep = " ") {
-  itemlist <- NULL
-  if (is.character(filename) && file.exists(filename)) {
+  transactions <- NULL
+  if (.valid_filename(filename)) {
     try ({
       raw <- readChar(filename, file.info(filename)$size, TRUE)
       raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
-      itemlist <- strsplit(raw, split = sep, fixed = TRUE)
+      # raw <- readLines(filename)
+      transactions <- strsplit(raw, split = sep, fixed = TRUE)
     })
+  } else {
+    message("invalid file name")
   }
-  return(itemlist)
+  return(transactions)
+}
+
+# check if given input is a valid filename, list or arules transactions object
+.valid_input <- function(i) {
+  return(!is.null(i) && (.valid_filename(i) || is(i, "list") || is(i, "transactions")))
+}
+
+# check if a given filename is a valid filename
+.valid_filename <- function(f) {
+  return(length(f) == 1 && is.character(f) && file.exists(f))
 }
 
 .header <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets",
