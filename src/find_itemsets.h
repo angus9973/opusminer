@@ -17,3 +17,4 @@
 
 void find_itemsets();
 extern float minValue;
+extern std::map<itemset, int> TIDCount;
