@@ -52,6 +52,10 @@ void init() {
   itemsets = std::priority_queue<itemsetRec>();  // opus_miner.cpp
   itemNames = std::vector<std::string>();        // globals.cpp
   minValue = -std::numeric_limits<float>::max(); // find_itemsets.cpp
+  TIDCount = std::map<itemset, int>();
+
+  //tidCount??? // find_itemsets.cpp
+  //p_value // globals.h - NO this is a typedef
 }
 
 // bool valgt(itemsetRec i1, itemsetRec i2) {
@@ -197,7 +201,7 @@ opus(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVecto
   }
   catch (...) {
     // fprintf(stderr, "Unhandled exception\n");
-    Rcpp::Rcout << "Unhandled exception";
+    Rcpp::Rcout << "Unhandled exception\n";
   }
 
   return output;
