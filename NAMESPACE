@@ -1,4 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
 import(arules)
+import(Matrix)
 useDynLib(opusminer)
