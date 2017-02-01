@@ -1,7 +1,22 @@
 # ==============================================================================
 # TO DO:
+#   - add
+#     - convenience file-reading, output format option list or trans. (arules)
+#   - investigate
+#     - results arules input vs om input: rounding?
+#     - to do with order (ie, sort 1 10 13 2 23 25 etc.) of items as chr...
+#     - also discrepancy C++ exe vs R... "value" changing differently?
+#     - discrepancy C++ exe vs R is due to init():opus_miner.cpp
+#     - also cause of sorted? YES
+#     - Q: DISCREPANCY ON FIRST LOAD ALSO (INIT CAUSING PROBLEM)
+#          OR ON ONLY 2ND-ONWARDS RUN (INIT NOT RESETING EVERYTHING)???
+#     - A: looks like 2nd-onwards runs [check]: ie, init not broad enough
+#     - appears that adding TIDCount to init() [and extern TIDCount in
+#       find_itemsets...] fixes the issue...
 #   - file-reading:
 #     - regex?
+#   - filie-writing:
+#     - write results to file?
 #   - test:
 #     - null items
 #     - duplicate items
@@ -212,7 +227,12 @@ opus <- function(transactions = NULL,
   if (.valid_filename(filename)) {
     try ({
       raw <- readChar(filename, file.info(filename)$size, TRUE)
-      raw <- strsplit(raw, split = "\n", fixed = TRUE)[[1]]
+
+      EOL <- ifelse(grepl("\r", raw),
+                    "\r\n",
+                    "\n")
+
+      raw <- strsplit(raw, split = EOL, fixed = TRUE)[[1]]
       # raw <- readLines(filename)
       transactions <- strsplit(raw, split = sep, fixed = TRUE)
     })
