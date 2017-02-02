@@ -12,3 +12,4 @@ LazyData: true
 Imports:
   Rcpp (>= 0.12.9), arules (>= 1.5-0), Matrix (>= 1.2-7)
 LinkingTo: Rcpp
+RoxygenNote: 6.0.0
