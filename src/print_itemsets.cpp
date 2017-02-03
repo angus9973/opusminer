@@ -43,7 +43,6 @@ Rcpp::List get_itemsets(std::vector<itemsetRec> &is) {
   std::vector<itemsetRec>::const_iterator it;
 
   int index = 0;
-  int failed_count = 0;
 
   for (it = is.begin(); it != is.end(); it++) {
     output_itemset[index] = Rcpp::wrap(*it);
