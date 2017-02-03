@@ -5,12 +5,12 @@
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -48,7 +48,7 @@ bool checkSS2(std::vector<tidset> &uniqueTids, const int no, tidset &tidsleft, t
   if (!checkSS2(uniqueTids, no-1, tidsleft, newtids, availabletids, count, alpha)) {
     return false;
   }
- 
+
   return true;
 }
 
@@ -78,9 +78,9 @@ bool checkSS(itemset &is, tidset &supsettids) {
   if (result) {
     // set up a process that will check whether uniqueCov.size() is significantly greater than can be predicted by assuming independence between any partition of is
     tidset uniqueCov(uniqueTids[0]); // this is the TIDs covered by is that are not in supsettids
-
+    int is_size = (int)is.size();
     // calculate uniqueCov
-    for (i = 1; i < is.size(); i++) {
+    for (i = 1; i < is_size; i++) {
       dintersection(uniqueCov, uniqueTids[i]);
     }
 

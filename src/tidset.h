@@ -22,19 +22,9 @@
 
 #include "opus_miner.h"
 
-// store tids as an ordered vector of ints
-// class tidset :
-//   public std::vector<TID>
-// {
-// public:
-//   tidset(void);
-//   ~tidset(void);
-//   // operator std::vector<int>() const {return std::vector<int>();}
-// };
-
 typedef std::vector<TID> tidset;
 
-inline int count_intersection(tidset &s1, tidset &s2) {
+inline unsigned int count_intersection(tidset &s1, tidset &s2) {
   // count the size of the intersection
   // relies on the sets both being stored in ascending order
 

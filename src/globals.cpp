@@ -15,8 +15,6 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <Rcpp.h>
-
 #include <math.h>
 #include "globals.h"
 
@@ -41,8 +39,8 @@ void expandAlpha(const unsigned int depth) {
     if (depth <= 1) return;
   }
 
-  if (depth > noOfItems) alpha.push_back(0.0);
-  else if (depth == noOfItems) alpha.push_back(alpha[depth-1]); // at deepest level so might as well use as much of the rest of the probability mass as possible
+  if (static_cast<int>(depth) > noOfItems) alpha.push_back(0.0);
+  else if (static_cast<int>(depth) == noOfItems) alpha.push_back(alpha[depth-1]); // at deepest level so might as well use as much of the rest of the probability mass as possible
   else {
     unsigned int i;
     for (i = alpha.size(); i <= depth; i++) {

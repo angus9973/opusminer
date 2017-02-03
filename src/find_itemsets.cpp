@@ -330,6 +330,7 @@ void opus(itemsetRec &is, tidset &cover, itemQClass &q, const int maxItemCount) 
 void find_itemsets() {
   itemQClass q; // a queue of items, to be sorted on an upper bound on value
   int i;
+  unsigned int j;
 
   // initalise q - the queue of items ordered on an upper bound on value
   for (i = 0; i < noOfItems; i++) {
@@ -356,25 +357,21 @@ void find_itemsets() {
   itemsetRec is;
 
   // we are stepping through all associations of i with j<i, so the first value of i that will have effect is 1
-  for (i = 1; i < q.size() && q[i].ubVal > minValue; i++) {
-    const itemID item = q[i].item;
+  for (j = 1; j < q.size() && q[j].ubVal > minValue; j++) {
+    const itemID item = q[j].item;
 
     is.clear();
     is.insert(item);
 
     opus(is, tids[item], newq, tids[item].size());
 
-    newq.append(q[i].ubVal, item);
+    newq.append(q[j].ubVal, item);
 
     if (prevMinVal < minValue) {
-      // printf("<%f>",minValue);
       Rcpp::Rcout << "<" << minValue << ">";
       prevMinVal = minValue;
     }
-    // else putchar('.');
     else Rcpp::Rcout << ".";
-    // fflush(stdout);
   }
 
-  // putchar('\n');
 }
