@@ -28,7 +28,7 @@ The top k productive, non-redundant itemsets, with relevant
 measure of interest (leverage or lift) using the OPUS Miner algorithm.
 }
 \details{
-\code{opus} provides an interfact to the OPUS Miner algorithm (implemented in
+\code{opus} provides an interface to the OPUS Miner algorithm (implemented in
 C++) to find the top k productive, non-redundant itemsets by leverage
 (default) or lift.
 
@@ -53,7 +53,7 @@ The optional additional parameters are as follows:
         whether to filter itemsets that are not independently productive
         (default TRUE)
   \item \code{search_by_lift}
-        make lift (rather than leverage) the measure of iterest (default
+        make lift (rather than leverage) the measure of interest (default
         FALSE)
   \item \code{correct_for_mult_compare}
         whether to correct alpha for the size of the search space (default
