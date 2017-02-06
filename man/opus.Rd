@@ -2,7 +2,7 @@
 % Please edit documentation in R/opusminer.R
 \name{opus}
 \alias{opus}
-\title{OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets}
+\title{Filtered Top-k Association Discovery of Self-Sufficient Itemsets}
 \usage{
 opus(transactions = NULL, k = 100, format = "dataframe", sep = " ", ...)
 }
@@ -19,17 +19,17 @@ opus(transactions = NULL, k = 100, format = "dataframe", sep = " ", ...)
 \item{...}{Optional additional parameters (see details).}
 }
 \value{
-The top k productive, non-redundant itemsets, with relevant
+The top \emph{k} productive, nonredundant itemsets, with relevant
   statistics, in the form of a data frame, object of class
   \code{\link[arules]{itemsets}} (\code{arules}), or a list.
 }
 \description{
-\code{opus} finds the top k productive, non-redundant itemsets on the
-measure of interest (leverage or lift) using the OPUS Miner algorithm.
+\code{opus} finds the top \emph{k} productive, nonredundant itemsets on the measure
+of interest (leverage or lift) using the OPUS Miner algorithm.
 }
 \details{
 \code{opus} provides an interface to the OPUS Miner algorithm (implemented in
-C++) to find the top k productive, non-redundant itemsets by leverage
+C++) to find the top \emph{k} productive, nonredundant itemsets by leverage
 (default) or lift.
 
 \code{transactions} should be a filename, list (of transactions, each list
@@ -62,8 +62,23 @@ The optional additional parameters are as follows:
         whether to allow redundant itemsets (default TRUE)
 }
 }
+\examples{
+\dontrun{
+
+result <- opus("mushroom.dat")
+result <- opus("mushroom.dat", k = 50)
+
+result[result$self_sufficient, ]
+result[order(result$count, decreasing = TRUE), ]
+
+trans <- read_transactions("mushroom.dat", format = "transactions")
+
+result <- opus(trans, print_closures = TRUE)
+result <- opus(trans, format = "itemsets")
+}
+}
 \references{
-Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting
-Associations. ACM Transactions on Knowledge Discovery from Data. 8(3), Art.
-no. 15.
+Webb, G. I., & Vreeken, J. (2014). Efficient Discovery of the Most
+Interesting Associations. \emph{ACM Transactions on Knowledge Discovery from
+Data}, 8(3), 1-15. doi: http://dx.doi.org/10.1145/2601433
 }
