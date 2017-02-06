@@ -2,10 +2,12 @@ Package: opusminer
 Type: Package
 Title: OPUS Miner Algorithm for Filtered Top-k Association Discovery
 Version: 0.1-0
-Author: Geoffrey I Webb
-Maintainer: TBA <tba@tba.com>
-Description: Applies OPUS search for filtered top-k association discovery
-    of self-sufficient itemsets.
+Authors@R:  c(
+  person("Geoffrey I", "Webb", role = "aut", comment = "OPUS Miner algorithm and C++ implementation, http://i.giwebb.com/index.php/research/filtered-top-k-association-discovery/"),
+  person("Christoph", "Bergmeir", role = "ctb"),
+  person("Angus", "Dempster", email = "adem2@student.monash.edu", role = "cre", comment = "R interface"))
+Description: Provides an interface to the OPUS Miner algorithm (implemented in
+  C++) for finding the top k, nonredundant itemsets on the measure of interest.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
