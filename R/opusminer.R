@@ -1,48 +1,51 @@
-# ==============================================================================
-# TO DO:
-#   - clean-up cpp
-#   - doc: add copyright etc. to R source
-#   - add
-#     - convenience file-reading, output format option list or trans. (arules)
-#   - investigate
-#     - results arules input vs om input: rounding?
-#     - to do with order (ie, sort 1 10 13 2 23 25 etc.) of items as chr...
-#     - also discrepancy C++ exe vs R... "value" changing differently?
-#     - discrepancy C++ exe vs R is due to init():opus_miner.cpp
-#     - also cause of sorted? YES
-#     - Q: DISCREPANCY ON FIRST LOAD ALSO (INIT CAUSING PROBLEM)
-#          OR ON ONLY 2ND-ONWARDS RUN (INIT NOT RESETING EVERYTHING)???
-#     - A: looks like 2nd-onwards runs [check]: ie, init not broad enough
-#     - appears that adding TIDCount to init() [and extern TIDCount in
-#       find_itemsets...] fixes the issue...
-#   - file-reading:
-#     - regex?
-#   - filie-writing:
-#     - write results to file?
-#   - test:
-#     - null items
-#     - duplicate items
-#   - package issues:
-#     - comments:
-#       - R
-#       - C++
-#     - arules-based functionality conditional on arules being loaded?
-# ..............................................................................
+# PACKAGE_DOCUMENTATION=========================================================
 
-# ==============================================================================
-# EXTERNAL
-# ..............................................................................
+#' Filtered Top-k Association Discovery of Self-Sufficient Itemsets
+#'
+#' The \code{opusminer} package provides an R interface to the OPUS Miner
+#' algorithm (implemented in C++), developed by Professor Geoffrey I Webb, for
+#' finding the top \emph{k}, nonredundant itemsets on the measure of interest.
+#'
+#' OPUS Miner is a branch-and-bound algorithm for efficient discovery of
+#' self-sufficient itemsets. For a user-specified k and interest measure, OPUS
+#' Miner finds the top \emph{k} productive nonredundant itemsets with respect to
+#' the specified measure. It is then straightforward to filter out those that
+#' are not independently productive with respect to that set, resulting in a set
+#' of self-sufficient itemsets.
+#'
+#' OPUS Miner is based on the OPUS search algorithm.  OPUS is a set enumeration
+#' algorithm distinguished by a computationally efficient pruning mechanism that
+#' ensures that whenever an item is pruned, it is removed from the entire search
+#' space below the parent node.
+#'
+#' OPUS Miner systematically traverses viable regions of the search space (using
+#' depth-first search), maintaining a collection of the top \emph{k} productive
+#' nonredundant itemsets in the search space explored. When all of the viable
+#' regions have been explored, the top \emph{k} productive nonredundant itemsets
+#' in the search space explored must be the top \emph{k} for the entire search
+#' space.
+#'
+#' @references
+#' Webb, G. I., & Vreeken, J. (2014). Efficient Discovery of the Most
+#' Interesting Associations. \emph{ACM Transactions on Knowledge Discovery from
+#' Data}, 8(3), 1-15. doi: http://dx.doi.org/10.1145/2601433
+#'
+#' @docType package
+#' @name opusminer-package
+NULL
+
+# EXTERNAL_FUNCTIONS============================================================
 
 #' @title
-#' OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets
+#' Filtered Top-k Association Discovery of Self-Sufficient Itemsets
 #'
 #' @description
-#' \code{opus} finds the top k productive, non-redundant itemsets on the
-#' measure of interest (leverage or lift) using the OPUS Miner algorithm.
+#' \code{opus} finds the top \emph{k} productive, nonredundant itemsets on the measure
+#' of interest (leverage or lift) using the OPUS Miner algorithm.
 #'
 #' @details
 #' \code{opus} provides an interface to the OPUS Miner algorithm (implemented in
-#' C++) to find the top k productive, non-redundant itemsets by leverage
+#' C++) to find the top \emph{k} productive, nonredundant itemsets by leverage
 #' (default) or lift.
 #'
 #' \code{transactions} should be a filename, list (of transactions, each list
@@ -76,9 +79,9 @@
 #' }
 #'
 #' @references
-#' Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting
-#' Associations. ACM Transactions on Knowledge Discovery from Data. 8(3), Art.
-#' no. 15.
+#' Webb, G. I., & Vreeken, J. (2014). Efficient Discovery of the Most
+#' Interesting Associations. \emph{ACM Transactions on Knowledge Discovery from
+#' Data}, 8(3), 1-15. doi: http://dx.doi.org/10.1145/2601433
 #'
 #' @param transactions A filename, list, or object of class
 #'   \code{\link[arules]{transactions}} (\code{arules}).
@@ -87,9 +90,24 @@
 #' @param sep The separator between items (for files, default " ").
 #' @param ... Optional additional parameters (see details).
 #'
-#' @return  The top k productive, non-redundant itemsets, with relevant
+#' @return  The top \emph{k} productive, nonredundant itemsets, with relevant
 #'   statistics, in the form of a data frame, object of class
 #'   \code{\link[arules]{itemsets}} (\code{arules}), or a list.
+#'
+#' @examples
+#' \dontrun{
+#'
+#' result <- opus("mushroom.dat")
+#' result <- opus("mushroom.dat", k = 50)
+#'
+#' result[result$self_sufficient, ]
+#' result[order(result$count, decreasing = TRUE), ]
+#'
+#' trans <- read_transactions("mushroom.dat", format = "transactions")
+#'
+#' result <- opus(trans, print_closures = TRUE)
+#' result <- opus(trans, format = "itemsets")
+#' }
 opus <- function(transactions = NULL,
                  k = 100,
                  format = "dataframe",
@@ -185,13 +203,18 @@ opus <- function(transactions = NULL,
 #' @return The transaction data, in the form of a list (of transactions, each
 #' list element being a vector of character values representing item labels), or
 #' an object of class \code{\link[arules]{transactions}} (\code{arules}).
+#'
+#' @examples
+#' \dontrun{
+#'
+#' trans <- read_transactions("mushroom.dat")
+#' trans <- read_transactions("mushroom.dat", format = "transactions")
+#' }
 read_transactions <- function(filename, sep = " ", format = "list") {
   return(.read_transactions(filename, sep, format))
 }
 
-# ==============================================================================
-# INTERNAL
-# ..............................................................................
+# INTERNAL_FUNCTIONS============================================================
 
 # return output as a data frame
 .as_data_frame <- function(output) {
@@ -261,7 +284,7 @@ read_transactions <- function(filename, sep = " ", format = "list") {
   return(unlist(def))
 }
 
-# return the item labels
+# return the item labels ("+ 1" to index from 1)
 .decode <- function(itemset, index) {
   return(lapply(itemset, function(v){index[v + 1]}))
 }
@@ -290,6 +313,7 @@ read_transactions <- function(filename, sep = " ", format = "list") {
                                     use.names = FALSE)
 
   # replace item index numbers with transaction numbers (fast)
+  # "- as.integer(1)" to index from 0
   transaction_numbers_flat <- rep(seq_along(item_index_numbers),
                                   lengths(item_index_numbers)) - as.integer(1)
 
@@ -311,35 +335,22 @@ read_transactions <- function(filename, sep = " ", format = "list") {
 
 # read transactions from a file (fast)
 .read_transactions <- function(filename, sep = " ", format = "list") {
-
   transactions <- NULL
-
   if (.valid_filename(filename)) {
-
     try ({
-
       raw <- readChar(filename, file.info(filename)$size, TRUE)
-
+      # determine CF + LF or LF-only line-endings
       eol <- ifelse(grepl("\r", raw), "\r\n", "\n")
-
       raw <- strsplit(raw, split = eol, fixed = TRUE)[[1]]
-
       transactions <- strsplit(raw, split = sep, fixed = TRUE)
-
       if (format == "transactions") {
         transactions <- .as_transactions(transactions)
       }
-
     })
-
   } else {
-
-    message("invalid file name")
-
+    message("invalid filename")
   }
-
   return(transactions)
-
 }
 
 # check: valid filename, list, or object of class transactions (arules)
@@ -352,14 +363,3 @@ read_transactions <- function(filename, sep = " ", format = "list") {
 .valid_filename <- function(f) {
   return(length(f) == 1 && is.character(f) && file.exists(f))
 }
-
-.header <- c("OPUS Miner: Filtered Top-k Association Discovery of Self-Sufficient Itemsets",
-             "Version 1.2",
-             "Copyright (C) 2012-2016 Geoffrey I Webb",
-             "This program comes with ABSOLUTELY NO WARRANTY. This is free software,",
-             "and you are welcome to redistribute it under certain conditions.",
-             "See the GNU General Public Licence <http://www.gnu.org/licenses/> for details.",
-             "",
-             "If you publish results obtained by using this software please cite:",
-             "  Webb, G.I. & Vreeken, J. (2014) Efficient Discovery of the Most Interesting Associations.",
-             "  ACM Transactions on Knowledge Discovery from Data. 8(3), Art. no. 15.")
