@@ -32,3 +32,10 @@ transaction, each transaction (ie, line) being a sequence of item labels,
 separated by the character specified by the parameter \code{sep} (default
 " ").
 }
+\examples{
+\dontrun{
+
+trans <- read_transactions("mushroom.dat")
+trans <- read_transactions("mushroom.dat", format = "transactions")
+}
+}
