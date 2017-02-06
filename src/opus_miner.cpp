@@ -19,20 +19,13 @@
 
 #include <Rcpp.h>
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cmath>
 #include <limits>
 #ifdef _WIN32
-  #include <time.h>
+  #include <ctime>
 #else
   #include <sys/times.h>
   #include <unistd.h>
-#endif
-
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
 #endif
 
 #include "opus_miner.h"
@@ -59,9 +52,6 @@ Rcpp::GenericVector
   __cdecl
 #endif
 opus(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVector k_, Rcpp::LogicalVector args) {
-  #ifdef _DEBUG
-    _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-  #endif
 
   init();
   tids = Rcpp::as< std::vector< tidset > >(tidList);

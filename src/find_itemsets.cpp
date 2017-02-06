@@ -17,16 +17,8 @@
 
 #include <Rcpp.h>
 
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#endif
-
 #include <limits>
 #include <iterator>
-#include <malloc.h>
-#include <assert.h>
 #include <map>
 #include <algorithm>
 
@@ -200,7 +192,6 @@ bool checkSubsetsX(itemset &sofar, itemset &remaining, const itemID limit, const
 // calculates leverage, p, whether is is redundant and whether it is possible to determine that all supersets of is will be redundant
 // return true iff is is not redundant, val > minValue and p <= alpha
 bool checkSubsets(itemID item, itemset &is, const int cnt, const double new_sup, const int parentCnt, const double parentSup, float &val, double &p, const double alpha) {
-  assert(is.size() > 1);
 
   // do test for new item against the rest
   const int itemCnt = tids[item].size();

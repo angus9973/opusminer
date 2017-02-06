@@ -17,7 +17,6 @@
 
 #include <Rcpp.h>
 
-#include <stdio.h>
 #include <vector>
 #include <algorithm>
 #include "globals.h"

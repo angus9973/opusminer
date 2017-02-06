@@ -5,12 +5,12 @@
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -23,7 +23,7 @@
 #include <vector>
 #include <queue>
 #include <string>
-#include <math.h>
+#include <cmath>
 #include "itemset.h"
 #include "tidset.h"
 #include "fisher.h"
@@ -46,7 +46,7 @@ inline double getAlpha(const unsigned int depth) {
   if (!correctionForMultCompare) {
     return 0.05;
   }
-  
+
   if (depth >= alpha.size()) {
     expandAlpha(depth);
   }

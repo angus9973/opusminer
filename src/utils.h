@@ -5,41 +5,22 @@
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
-** 
+**
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
 #include <set>
 #include "globals.h"
 #include "fisher.h"
 
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
-
 #include <set>
 #include "globals.h"
-
-template <class Type>
-inline void safe_alloc(Type *&p, const long size)
-{
-    p = static_cast<Type*>(malloc(sizeof(Type)*size));
-  
-    if (p == NULL) {
-      fprintf(stderr, "out of memory\n");
-      exit(1);
-    }
-}
 
 // true iff s1 is a subset of s2
 // assumes that sets are stored in ascending order
@@ -61,7 +42,6 @@ inline bool subset(Type &s1, Type &s2)
 
 // get the tidset for an itemset
 inline void gettids(const itemset &is, tidset &t) {
-  assert(is.size() > 0);
 
   itemset::const_iterator it = is.begin();
 

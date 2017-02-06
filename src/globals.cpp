@@ -15,7 +15,7 @@
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <math.h>
+#include <cmath>
 #include "globals.h"
 
 unsigned int k = 100;  // the number of associations to return
@@ -44,7 +44,7 @@ void expandAlpha(const unsigned int depth) {
   else {
     unsigned int i;
     for (i = alpha.size(); i <= depth; i++) {
-      alpha.push_back(std::min((pow(0.5, static_cast<int>(depth-1)) / exp(log_combin(noOfItems, depth))) * 0.05, alpha[depth-1]));
+      alpha.push_back(std::min((std::pow(0.5, static_cast<int>(depth-1)) / std::exp(log_combin(noOfItems, depth))) * 0.05, alpha[depth-1]));
     }
   }
 }
