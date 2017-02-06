@@ -1,1 +1,0 @@
-PKG_CXXFLAGS = -pedantic -Wall -Wformat-security -ansi
