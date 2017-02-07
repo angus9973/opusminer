@@ -29,8 +29,8 @@ faster for larger files than alternative methods.
 
 Files should be in the format of a list of transactions, one line per
 transaction, each transaction (ie, line) being a sequence of item labels,
-separated by the character specified by the parameter \code{sep} (default
-" ").
+separated by the character specified by the parameter \code{sep} (default "
+").  See, for example, the files at \url{http://fimi.ua.ac.be/data/}.
 }
 \examples{
 \dontrun{
