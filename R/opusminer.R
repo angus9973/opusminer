@@ -4,14 +4,14 @@
 #'
 #' The \code{opusminer} package provides an R interface to the OPUS Miner
 #' algorithm (implemented in C++), developed by Professor Geoffrey I Webb, for
-#' finding the top \emph{k}, nonredundant itemsets on the measure of interest.
+#' finding the top \emph{k}, non-redundant itemsets on the measure of interest.
 #'
 #' OPUS Miner is a branch-and-bound algorithm for efficient discovery of
-#' self-sufficient itemsets. For a user-specified k and interest measure, OPUS
-#' Miner finds the top \emph{k} productive nonredundant itemsets with respect to
-#' the specified measure. It is then straightforward to filter out those that
-#' are not independently productive with respect to that set, resulting in a set
-#' of self-sufficient itemsets.
+#' self-sufficient itemsets. For a user-specified \emph{k} and interest measure,
+#' OPUS Miner finds the top \emph{k} productive non-redundant itemsets with
+#' respect to the specified measure. It is then straightforward to filter out
+#' those that are not independently productive with respect to that set,
+#' resulting in a set of self-sufficient itemsets.
 #'
 #' OPUS Miner is based on the OPUS search algorithm.  OPUS is a set enumeration
 #' algorithm distinguished by a computationally efficient pruning mechanism that
@@ -20,10 +20,13 @@
 #'
 #' OPUS Miner systematically traverses viable regions of the search space (using
 #' depth-first search), maintaining a collection of the top \emph{k} productive
-#' nonredundant itemsets in the search space explored. When all of the viable
-#' regions have been explored, the top \emph{k} productive nonredundant itemsets
-#' in the search space explored must be the top \emph{k} for the entire search
-#' space.
+#' non-redundant itemsets in the search space explored. When all of the viable
+#' regions have been explored, the top \emph{k} productive non-redundant
+#' itemsets in the search space explored must be the top \emph{k} for the entire
+#' search space.
+#'
+#' A comprehensive explanation of the algorithm is provided in the article cited
+#' below.
 #'
 #' @references
 #' Webb, G. I., & Vreeken, J. (2014). Efficient Discovery of the Most
@@ -40,12 +43,12 @@ NULL
 #' Filtered Top-k Association Discovery of Self-Sufficient Itemsets
 #'
 #' @description
-#' \code{opus} finds the top \emph{k} productive, nonredundant itemsets on the measure
-#' of interest (leverage or lift) using the OPUS Miner algorithm.
+#' \code{opus} finds the top \emph{k} productive, non-redundant itemsets on the
+#' measure of interest (leverage or lift) using the OPUS Miner algorithm.
 #'
 #' @details
 #' \code{opus} provides an interface to the OPUS Miner algorithm (implemented in
-#' C++) to find the top \emph{k} productive, nonredundant itemsets by leverage
+#' C++) to find the top \emph{k} productive, non-redundant itemsets by leverage
 #' (default) or lift.
 #'
 #' \code{transactions} should be a filename, list (of transactions, each list
@@ -54,29 +57,13 @@ NULL
 #'
 #' Files should be in the format of a list of transactions, one line per
 #' transaction, each transaction (ie, line) being a sequence of item labels,
-#' separated by the character specified by the parameter \code{sep} (default
-#' " ").  (Alternatively, files can be read seaparately using the \code{\link{read_transactions}}
-#' function.)
+#' separated by the character specified by the parameter \code{sep} (default "
+#' ").  See, for example, the files at \url{http://fimi.ua.ac.be/data/}.
+#' (Alternatively, files can be read seaparately using the
+#' \code{\link{read_transactions}} function.)
 #'
-#' \code{format} should be specified as either "dataframe" (the default) or
+#' \code{format} should be specified as either "data.frame" (the default) or
 #' "itemsets", and any other value will return a list.
-#'
-#' The optional additional parameters are as follows:
-#' \itemize{
-#'   \item \code{print_closures}
-#'         whether to also return the closure for each itemset (default FALSE)
-#'   \item \code{filter_itemsets}
-#'         whether to filter itemsets that are not independently productive
-#'         (default TRUE)
-#'   \item \code{search_by_lift}
-#'         make lift (rather than leverage) the measure of interest (default
-#'         FALSE)
-#'   \item \code{correct_for_mult_compare}
-#'         whether to correct alpha for the size of the search space (default
-#'         TRUE)
-#'   \item \code{redundancy_tests}
-#'         whether to allow redundant itemsets (default TRUE)
-#' }
 #'
 #' @references
 #' Webb, G. I., & Vreeken, J. (2014). Efficient Discovery of the Most
@@ -86,11 +73,15 @@ NULL
 #' @param transactions A filename, list, or object of class
 #'   \code{\link[arules]{transactions}} (\code{arules}).
 #' @param k The number of itemsets to return, an integer (default 100).
-#' @param format The output format ("dataframe", default, or "itemsets").
+#' @param format The output format ("data.frame", default, or "itemsets").
 #' @param sep The separator between items (for files, default " ").
-#' @param ... Optional additional parameters (see details).
+#' @param print_closures return the closure for each itemset (default \code{FALSE})
+#' @param filter_itemsets filter itemsets that are not independently productive (default \code{TRUE})
+#' @param search_by_lift make lift (rather than leverage) the measure of interest (default \code{FALSE})
+#' @param correct_for_mult_compare correct alpha for the size of the search space (default \code{TRUE})
+#' @param redundancy_tests exclude redundant itemsets (default \code{TRUE})
 #'
-#' @return  The top \emph{k} productive, nonredundant itemsets, with relevant
+#' @return  The top \emph{k} productive, non-redundant itemsets, with relevant
 #'   statistics, in the form of a data frame, object of class
 #'   \code{\link[arules]{itemsets}} (\code{arules}), or a list.
 #'
@@ -108,18 +99,22 @@ NULL
 #' result <- opus(trans, print_closures = TRUE)
 #' result <- opus(trans, format = "itemsets")
 #' }
-opus <- function(transactions = NULL,
+opus <- function(transactions,
                  k = 100,
-                 format = "dataframe",
+                 format = "data.frame",
                  sep = " ",
-                 ...) {
+                 print_closures = FALSE,
+                 filter_itemsets = TRUE,
+                 search_by_lift = FALSE,
+                 correct_for_mult_compare = TRUE,
+                 redundancy_tests = TRUE) {
 
   # initialise output
   output <- NULL
 
   # check arguments
   if (k < 1) {k <- 1}
-  cpp_arguments <- .check_cpp_arguments(list(...))
+  cpp_arguments <- .check_cpp_arguments(as.list(environment()))
 
   if (.valid_input(transactions)) {
 
@@ -165,7 +160,7 @@ opus <- function(transactions = NULL,
     cat("[[Total: ", round(time[4] - time[1], 2), " seconds]]\n\n", sep = "")
 
     # format the output
-    if (format == "dataframe") {
+    if (format == "data.frame") {
       output <- .as_data_frame(output)
     } else if (format == "itemsets") {
       output <- .as_itemsets(output)
@@ -193,8 +188,8 @@ opus <- function(transactions = NULL,
 #'
 #' Files should be in the format of a list of transactions, one line per
 #' transaction, each transaction (ie, line) being a sequence of item labels,
-#' separated by the character specified by the parameter \code{sep} (default
-#' " ").
+#' separated by the character specified by the parameter \code{sep} (default "
+#' ").  See, for example, the files at \url{http://fimi.ua.ac.be/data/}.
 #'
 #' @param filename A filename.
 #' @param sep The separator between items (default " ").
