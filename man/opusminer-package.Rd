@@ -7,15 +7,15 @@
 \description{
 The \code{opusminer} package provides an R interface to the OPUS Miner
 algorithm (implemented in C++), developed by Professor Geoffrey I Webb, for
-finding the top \emph{k}, nonredundant itemsets on the measure of interest.
+finding the top \emph{k}, non-redundant itemsets on the measure of interest.
 }
 \details{
 OPUS Miner is a branch-and-bound algorithm for efficient discovery of
-self-sufficient itemsets. For a user-specified k and interest measure, OPUS
-Miner finds the top \emph{k} productive nonredundant itemsets with respect to
-the specified measure. It is then straightforward to filter out those that
-are not independently productive with respect to that set, resulting in a set
-of self-sufficient itemsets.
+self-sufficient itemsets. For a user-specified \emph{k} and interest measure,
+OPUS Miner finds the top \emph{k} productive non-redundant itemsets with
+respect to the specified measure. It is then straightforward to filter out
+those that are not independently productive with respect to that set,
+resulting in a set of self-sufficient itemsets.
 
 OPUS Miner is based on the OPUS search algorithm.  OPUS is a set enumeration
 algorithm distinguished by a computationally efficient pruning mechanism that
@@ -24,10 +24,13 @@ space below the parent node.
 
 OPUS Miner systematically traverses viable regions of the search space (using
 depth-first search), maintaining a collection of the top \emph{k} productive
-nonredundant itemsets in the search space explored. When all of the viable
-regions have been explored, the top \emph{k} productive nonredundant itemsets
-in the search space explored must be the top \emph{k} for the entire search
-space.
+non-redundant itemsets in the search space explored. When all of the viable
+regions have been explored, the top \emph{k} productive non-redundant
+itemsets in the search space explored must be the top \emph{k} for the entire
+search space.
+
+A comprehensive explanation of the algorithm is provided in the article cited
+below.
 }
 \references{
 Webb, G. I., & Vreeken, J. (2014). Efficient Discovery of the Most
