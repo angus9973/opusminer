@@ -4,7 +4,9 @@
 \alias{opus}
 \title{Filtered Top-k Association Discovery of Self-Sufficient Itemsets}
 \usage{
-opus(transactions = NULL, k = 100, format = "dataframe", sep = " ", ...)
+opus(transactions, k = 100, format = "data.frame", sep = " ",
+  print_closures = FALSE, filter_itemsets = TRUE, search_by_lift = FALSE,
+  correct_for_mult_compare = TRUE, redundancy_tests = TRUE)
 }
 \arguments{
 \item{transactions}{A filename, list, or object of class
@@ -12,24 +14,32 @@ opus(transactions = NULL, k = 100, format = "dataframe", sep = " ", ...)
 
 \item{k}{The number of itemsets to return, an integer (default 100).}
 
-\item{format}{The output format ("dataframe", default, or "itemsets").}
+\item{format}{The output format ("data.frame", default, or "itemsets").}
 
 \item{sep}{The separator between items (for files, default " ").}
 
-\item{...}{Optional additional parameters (see details).}
+\item{print_closures}{return the closure for each itemset (default \code{FALSE})}
+
+\item{filter_itemsets}{filter itemsets that are not independently productive (default \code{TRUE})}
+
+\item{search_by_lift}{make lift (rather than leverage) the measure of interest (default \code{FALSE})}
+
+\item{correct_for_mult_compare}{correct alpha for the size of the search space (default \code{TRUE})}
+
+\item{redundancy_tests}{exclude redundant itemsets (default \code{TRUE})}
 }
 \value{
-The top \emph{k} productive, nonredundant itemsets, with relevant
+The top \emph{k} productive, non-redundant itemsets, with relevant
   statistics, in the form of a data frame, object of class
   \code{\link[arules]{itemsets}} (\code{arules}), or a list.
 }
 \description{
-\code{opus} finds the top \emph{k} productive, nonredundant itemsets on the measure
-of interest (leverage or lift) using the OPUS Miner algorithm.
+\code{opus} finds the top \emph{k} productive, non-redundant itemsets on the
+measure of interest (leverage or lift) using the OPUS Miner algorithm.
 }
 \details{
 \code{opus} provides an interface to the OPUS Miner algorithm (implemented in
-C++) to find the top \emph{k} productive, nonredundant itemsets by leverage
+C++) to find the top \emph{k} productive, non-redundant itemsets by leverage
 (default) or lift.
 
 \code{transactions} should be a filename, list (of transactions, each list
@@ -38,29 +48,13 @@ object of class \code{\link[arules]{transactions}} (\code{arules}).
 
 Files should be in the format of a list of transactions, one line per
 transaction, each transaction (ie, line) being a sequence of item labels,
-separated by the character specified by the parameter \code{sep} (default
-" ").  (Alternatively, files can be read seaparately using the \code{\link{read_transactions}}
-function.)
+separated by the character specified by the parameter \code{sep} (default "
+").  See, for example, the files at \url{http://fimi.ua.ac.be/data/}.
+(Alternatively, files can be read seaparately using the
+\code{\link{read_transactions}} function.)
 
-\code{format} should be specified as either "dataframe" (the default) or
+\code{format} should be specified as either "data.frame" (the default) or
 "itemsets", and any other value will return a list.
-
-The optional additional parameters are as follows:
-\itemize{
-  \item \code{print_closures}
-        whether to also return the closure for each itemset (default FALSE)
-  \item \code{filter_itemsets}
-        whether to filter itemsets that are not independently productive
-        (default TRUE)
-  \item \code{search_by_lift}
-        make lift (rather than leverage) the measure of interest (default
-        FALSE)
-  \item \code{correct_for_mult_compare}
-        whether to correct alpha for the size of the search space (default
-        TRUE)
-  \item \code{redundancy_tests}
-        whether to allow redundant itemsets (default TRUE)
-}
 }
 \examples{
 \dontrun{
