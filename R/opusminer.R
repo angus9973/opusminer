@@ -121,7 +121,7 @@ opus <- function(transactions,
     time <- rep(0, 4)
     time[1] <- proc.time()[3]
 
-    cat("Reading file/data...")
+    cat("Reading file/data...\n\n")
 
     # read and index the input data according to its format
     if (.valid_filename(transactions)) {
@@ -133,7 +133,6 @@ opus <- function(transactions,
     }
 
     time[2] <- proc.time()[3]
-    cat(" (", round(time[2] - time[1], 2), " seconds)\n\n", sep = "")
 
     # call OPUS Miner (C++)
     output <- .opus_cpp(input$tidlist,
@@ -143,7 +142,6 @@ opus <- function(transactions,
                         cpp_arguments)
 
     time[3] <- proc.time()[3]
-    cat("Decoding output...")
 
     # decode (deindex) the itemsets
     output$itemset <- .decode(output$itemset, input$index)
@@ -155,9 +153,7 @@ opus <- function(transactions,
       output$closure <- NULL
     }
 
-    time[4] <- proc.time()[3]
-    cat(" (", round(time[4] - time[3], 2), " seconds)\n\n", sep = "")
-    cat("[[Total: ", round(time[4] - time[1], 2), " seconds]]\n\n", sep = "")
+    # time[4] <- proc.time()[3]
 
     # format the output
     if (format == "data.frame") {
@@ -165,6 +161,13 @@ opus <- function(transactions,
     } else if (format == "itemsets") {
       output <- .as_itemsets(output)
     }
+
+    cat("[[",
+        round(time[3] - time[1], 2), " seconds: ",
+        round(time[2] - time[1], 2), " read, ",
+        round(time[3] - time[2], 2), " find",
+        ifelse(filter_itemsets, " & filter]]", "]]"),
+        sep = "")
 
   } else if (!is.null(transactions)) {
     message("invalid filename or transaction data")
