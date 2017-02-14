@@ -21,12 +21,6 @@
 
 #include <cmath>
 #include <limits>
-#ifdef _WIN32
-  #include <ctime>
-#else
-  #include <sys/times.h>
-  #include <unistd.h>
-#endif
 
 #include "opus_miner.h"
 #include "globals.h"
@@ -76,23 +70,9 @@ opus(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVecto
                 << noOfTransactions << " transactions, "
                 << noOfItems << " items)...\n\n";
 
-    #ifdef _WIN32
-      time_t find_start_t = time(NULL);
-    #else
-      struct tms find_start_t;
-      times(&find_start_t);
-    #endif // _WIN32
-
     find_itemsets();
 
-    #ifdef _WIN32
-      time_t find_end_t = time(NULL);
-    #else
-      struct tms find_end_t;
-      times(&find_end_t);
-    #endif // _WIN32
-
-    Rcpp::Rcout << " (" << find_end_t-find_start_t << " seconds)\n\n";
+    Rcpp::Rcout << "\n\n";
 
     // extract the itemsets from the priority queue
     while (!itemsets.empty()) {
@@ -101,18 +81,9 @@ opus(Rcpp::GenericVector tidList, int numItems, int numTrans, Rcpp::NumericVecto
     }
 
     if (filter) {
-      Rcpp::Rcout << "Filtering itemsets...";
+      Rcpp::Rcout << "Filtering itemsets...\n\n";
       filter_itemsets(is);
     }
-
-    #ifdef _WIN32
-      time_t print_start_t = time(NULL);
-    #else
-      struct tms print_start_t;
-      times(&print_start_t);
-    #endif // _WIN32
-
-    Rcpp::Rcout << " (" << print_start_t-find_end_t << " seconds)\n\n";
 
     output = get_itemsets(is);
   }
